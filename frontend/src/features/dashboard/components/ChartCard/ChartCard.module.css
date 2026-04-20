@@ -1,0 +1,87 @@
+.card {
+  background: white;
+  border-radius: 24px;
+  padding: 32px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  margin-bottom: 24px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.chartContainer {
+  position: relative;
+  width: 200px;
+  height: 200px;
+}
+
+.chartInfo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.chartInfoLabel {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.chartInfoValue {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.legend {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.legendLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.iconBox {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.categoryName {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.categoryPercent {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.categoryAmount {
+  font-size: 14px;
+  font-weight: 600;
+}
