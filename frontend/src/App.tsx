@@ -1,10 +1,15 @@
-import DashboardPage from './pages/dashboard/DashboardPage'
-import './index.css'
+import { BrowserRouter } from "react-router-dom";
+import AppRoutes from "./routes/AppRoutes";
+import { AuthProvider } from "./features/auth/context/AuthContext";
 
 function App() {
   return (
-    <DashboardPage />
-  )
+    <AuthProvider>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;
