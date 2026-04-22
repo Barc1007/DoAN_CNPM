@@ -1,5 +1,5 @@
 import React from "react";
-import { Utensils, GraduationCap, Coffee, Bus } from "lucide-react";
+import { Utensils, GraduationCap, Coffee } from "lucide-react";
 import styles from "./TransactionList.module.css";
 import { formatMoney } from "../../../../utils/formatMoney";
 import { formatShortDate } from "../../../../utils/formatDate";
@@ -10,12 +10,10 @@ interface TransactionListProps {
   transactions: Transaction[];
 }
 
-const CATEGORY_ICONS: Record<string, any> = {
-  "Ăn uống": { icon: Utensils, color: "#FF6B6B" },
-  "Học bổng": { icon: GraduationCap, color: "#4ECDC4" },
-  "Thu nhập": { icon: GraduationCap, color: "#4ECDC4" },
-  "Giải trí": { icon: Coffee, color: "#A29BFE" },
-  "Di chuyển": { icon: Bus, color: "#FFE66D" },
+const CATEGORY_ICONS: Record<number, any> = {
+  5: { icon: Utensils, color: "#4ECDC4" }, // Fallback for 5
+  6: { icon: Coffee, color: "#FF6B6B" },
+  10: { icon: GraduationCap, color: "#4ECDC4" },
 };
 
 const TransactionList: React.FC<TransactionListProps> = ({ transactions }) => {
@@ -28,11 +26,11 @@ const TransactionList: React.FC<TransactionListProps> = ({ transactions }) => {
 
       <div className={styles.list}>
         {transactions.map((t) => {
-          const config = CATEGORY_ICONS[t.category] || { icon: Utensils, color: "#6B7280" };
+          const config = CATEGORY_ICONS[t.category_id] || { icon: Utensils, color: "#6B7280" };
           const Icon = config.icon;
           
           return (
-            <div key={t.id} className={styles.item}>
+            <div key={t.transaction_id} className={styles.item}>
               <div className={styles.itemLeft}>
                 <div 
                   className={styles.iconBox}
@@ -41,8 +39,8 @@ const TransactionList: React.FC<TransactionListProps> = ({ transactions }) => {
                   <Icon size={18} />
                 </div>
                 <div className={styles.itemInfo}>
-                  <h4>{t.title}</h4>
-                  <p>{formatShortDate(t.date)}</p>
+                  <h4>{t.note || "Giao dịch"}</h4>
+                  <p>{formatShortDate(t.transaction_date)}</p>
                 </div>
               </div>
               <div className={clsx(

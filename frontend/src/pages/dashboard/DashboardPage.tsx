@@ -38,19 +38,25 @@ const DashboardPage: React.FC = () => {
       <div className={styles.grid}>
         <section className={styles.leftColumn}>
           <SummaryCard 
-            totalBalance={data.totalBalance}
-            totalIncome={data.totalIncome}
-            totalExpense={data.totalExpense}
+            total_balance={data.total_balance}
+            total_income={data.total_income}
+            total_expense={data.total_expense}
           />
           <ChartCard 
-            data={data.categorySpent}
-            totalExpense={data.totalExpense}
+            category_spent={data.category_spent}
+            total_expense={data.total_expense}
           />
         </section>
 
         <section className={styles.rightColumn}>
-          <GoalCard {...data.savingsGoal} />
-          <TransactionList transactions={data.recentTransactions} />
+          <GoalCard 
+            name={data.savings_goal.name}
+            description={`Hạn chót: ${formatDate(new Date(data.savings_goal.end_date))}`}
+            current_amount={data.savings_goal.current_amount}
+            target_amount={data.savings_goal.target_amount}
+            percentage={Math.min(100, Math.round((data.savings_goal.current_amount / data.savings_goal.target_amount) * 100))}
+          />
+          <TransactionList transactions={data.recent_transactions} />
         </section>
       </div>
 

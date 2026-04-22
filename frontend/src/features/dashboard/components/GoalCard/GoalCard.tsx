@@ -4,18 +4,18 @@ import styles from "./GoalCard.module.css";
 import { formatMoney } from "../../../../utils/formatMoney";
 
 interface GoalCardProps {
-  title: string;
+  name: string;
   description: string;
-  currentAmount: number;
-  targetAmount: number;
+  current_amount: number;
+  target_amount: number;
   percentage: number;
 }
 
 const GoalCard: React.FC<GoalCardProps> = ({
-  title,
+  name,
   description,
-  currentAmount,
-  targetAmount,
+  current_amount,
+  target_amount,
   percentage,
 }) => {
   return (
@@ -32,7 +32,7 @@ const GoalCard: React.FC<GoalCardProps> = ({
           <Laptop size={24} />
         </div>
         <div className={styles.goalText}>
-          <h4>{title}</h4>
+          <h4>{name}</h4>
           <p>{description}</p>
         </div>
       </div>
@@ -51,14 +51,14 @@ const GoalCard: React.FC<GoalCardProps> = ({
       </div>
 
       <div className={styles.amounts}>
-        <span>{formatMoney(currentAmount)}</span>
+        <span>{formatMoney(current_amount)}</span>
         <span style={{ color: "var(--color-text-muted)" }}>
-          {formatMoney(targetAmount)}
+          {formatMoney(target_amount)}
         </span>
       </div>
 
       <p className={styles.status}>
-        Còn <span>{formatMoney(targetAmount - currentAmount)}</span> nữa là đạt mục tiêu! 🎯
+        Còn <span>{formatMoney(target_amount - current_amount)}</span> nữa là đạt mục tiêu! 🎯
       </p>
     </div>
   );

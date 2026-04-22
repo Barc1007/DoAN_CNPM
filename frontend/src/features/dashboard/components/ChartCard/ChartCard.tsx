@@ -6,13 +6,13 @@ import { formatMoney } from "../../../../utils/formatMoney";
 import type { CategorySpend } from "../../../../types/dashboard";
 
 interface ChartCardProps {
-  data: CategorySpend[];
-  totalExpense: number;
+  category_spent: CategorySpend[];
+  total_expense: number;
 }
 
 const ICONS = [Utensils, Home, GraduationCap, Gamepad2];
 
-const ChartCard: React.FC<ChartCardProps> = ({ data, totalExpense }) => {
+const ChartCard: React.FC<ChartCardProps> = ({ category_spent, total_expense }) => {
   return (
     <div className={styles.card}>
       <h3 className={styles.title}>Chi tiêu theo danh mục</h3>
@@ -22,7 +22,7 @@ const ChartCard: React.FC<ChartCardProps> = ({ data, totalExpense }) => {
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
-                data={data}
+                data={category_spent}
                 cx="50%"
                 cy="50%"
                 innerRadius={65}
@@ -30,7 +30,7 @@ const ChartCard: React.FC<ChartCardProps> = ({ data, totalExpense }) => {
                 paddingAngle={5}
                 dataKey="amount"
               >
-                {data.map((entry, index) => (
+                {category_spent.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
@@ -39,12 +39,12 @@ const ChartCard: React.FC<ChartCardProps> = ({ data, totalExpense }) => {
           
           <div className={styles.chartInfo}>
             <p className={styles.chartInfoLabel}>Tổng chi</p>
-            <p className={styles.chartInfoValue}>{formatMoney(totalExpense)}</p>
+            <p className={styles.chartInfoValue}>{formatMoney(total_expense)}</p>
           </div>
         </div>
 
         <div className={styles.legend}>
-          {data.map((item, index) => {
+          {category_spent.map((item, index) => {
             const Icon = ICONS[index % ICONS.length];
             return (
               <div key={item.name} className={styles.legendItem}>

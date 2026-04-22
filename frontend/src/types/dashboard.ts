@@ -1,10 +1,62 @@
+export interface User {
+  user_id: number;
+  username: string;
+  email: string;
+  password?: string;
+  full_name: string;
+}
+
+export interface Category {
+  category_id: number;
+  name: string;
+  type: string;
+}
+
+export interface Wallet {
+  wallet_id: number;
+  user_id: number;
+  name: string;
+  balance: number;
+  wallet_type: string;
+}
+
 export interface Transaction {
-  id: string;
-  title: string;
+  transaction_id: number;
+  user_id: number;
+  wallet_id: number;
+  category_id: number;
+  type: string;
   amount: number;
-  type: "income" | "expense";
-  category: string;
-  date: string;
+  transaction_date: string;
+  note?: string;
+}
+
+export interface Budget {
+  budget_id: number;
+  user_id: number;
+  category_id: number;
+  name: string;
+  limit_amount: number;
+  spent_amount: number;
+  start_date: string;
+  end_date: string;
+  alert: number;
+}
+
+export interface Notification {
+  notification_id: number;
+  user_id: number;
+  type: string;
+  title: string;
+  message: string;
+}
+
+export interface SavingGoal {
+  saving_goal_id: number;
+  name: string;
+  target_amount: number;
+  current_amount: number;
+  end_date: string;
 }
 
 export interface CategorySpend {
@@ -14,22 +66,13 @@ export interface CategorySpend {
   color: string;
 }
 
-export interface SavingGoal {
-  id: string;
-  title: string;
-  description: string;
-  currentAmount: number;
-  targetAmount: number;
-  percentage: number;
-}
-
 export interface DashboardSummary {
-  totalBalance: number;
-  totalIncome: number;
-  totalExpense: number;
-  recentTransactions: Transaction[];
-  categorySpent: CategorySpend[];
-  savingsGoal: SavingGoal;
+  total_balance: number;
+  total_income: number;
+  total_expense: number;
+  recent_transactions: Transaction[];
+  category_spent: CategorySpend[];
+  savings_goal: SavingGoal;
 }
 
 export interface ApiResponse<T> {

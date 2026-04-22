@@ -4,15 +4,15 @@ import styles from "./SummaryCard.module.css";
 import { formatMoney } from "../../../../utils/formatMoney";
 
 interface SummaryCardProps {
-  totalBalance: number;
-  totalIncome: number;
-  totalExpense: number;
+  total_balance: number;
+  total_income: number;
+  total_expense: number;
 }
 
 const SummaryCard: React.FC<SummaryCardProps> = ({ 
-  totalBalance, 
-  totalIncome, 
-  totalExpense 
+  total_balance, 
+  total_income, 
+  total_expense 
 }) => {
   return (
     <div className={styles.summary}>
@@ -20,7 +20,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
         <Wallet size={16} />
         <span>Tổng số dư</span>
       </div>
-      <h2 className={styles.balance}>{formatMoney(totalBalance)}</h2>
+      <h2 className={styles.balance}>{formatMoney(total_balance)}</h2>
 
       <div className={styles.subCards}>
         <div className={styles.subCard}>
@@ -29,7 +29,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
           </div>
           <div>
             <p className={styles.subLabel}>Thu nhập</p>
-            <p className={styles.subAmount}>{formatMoney(totalIncome)}</p>
+            <p className={styles.subAmount}>{formatMoney(total_income)}</p>
           </div>
         </div>
         
@@ -39,7 +39,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
           </div>
           <div>
             <p className={styles.subLabel}>Chi tiêu</p>
-            <p className={styles.subAmount}>{formatMoney(totalExpense)}</p>
+            <p className={styles.subAmount}>{formatMoney(total_expense)}</p>
           </div>
         </div>
       </div>
