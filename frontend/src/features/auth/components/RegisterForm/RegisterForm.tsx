@@ -1,17 +1,19 @@
 import React from 'react';
-import { User, Lock, Eye, EyeOff } from 'lucide-react';
+import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import styles from "./RegisterForm.module.css";
+import { useRegisterForm } from '../../hooks/useRegisterForm';
 import { Link } from 'react-router-dom';
-import styles from "./LoginForm.module.css";
-import { useLoginForm } from '../../hooks/useLoginForm';
 
-const LoginForm: React.FC = () => {
+const RegisterForm: React.FC = () => {
   const {
+    fullName, setFullName,
     username, setUsername,
+    email, setEmail,
     password, setPassword,
+    confirmPassword, setConfirmPassword,
     showPassword, togglePasswordVisibility,
-    rememberMe, setRememberMe,
     loading, error, handleSubmit
-  } = useLoginForm();
+  } = useRegisterForm();
 
   return (
     <div className={styles.container}>
@@ -29,12 +31,27 @@ const LoginForm: React.FC = () => {
       </div>
 
       <div className={styles.header}>
-        <h2>Chào mừng trở lại! 👋</h2>
-        <p>Đăng nhập để tiếp tục quản lý tài chính của bạn</p>
+        <h2>Tạo tài khoản mới 🎉</h2>
+        <p>Bắt đầu hành trình quản lý tài chính thông minh</p>
       </div>
 
       <form className={styles.form} onSubmit={handleSubmit}>
         {error && <div className={styles.error}>{error}</div>}
+
+        <div className={styles.inputGroup}>
+          <label htmlFor="fullName">Họ và tên</label>
+          <div className={styles.inputWrapper}>
+            <User className={styles.inputIcon} size={20} />
+            <input 
+              id="fullName"
+              type="text" 
+              placeholder="Nguyễn Văn A" 
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className={styles.input}
+            />
+          </div>
+        </div>
 
         <div className={styles.inputGroup}>
           <label htmlFor="username">Tên đăng nhập</label>
@@ -46,6 +63,21 @@ const LoginForm: React.FC = () => {
               placeholder="Nhập tên đăng nhập" 
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              className={styles.input}
+            />
+          </div>
+        </div>
+
+        <div className={styles.inputGroup}>
+          <label htmlFor="email">Email</label>
+          <div className={styles.inputWrapper}>
+            <Mail className={styles.inputIcon} size={20} />
+            <input 
+              id="email"
+              type="email" 
+              placeholder="email@example.com" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className={styles.input}
             />
           </div>
@@ -73,32 +105,35 @@ const LoginForm: React.FC = () => {
           </div>
         </div>
 
-        <div className={styles.actionsRow}>
-          <label className={styles.rememberRow}>
+        <div className={styles.inputGroup}>
+          <label htmlFor="confirmPassword">Xác nhận mật khẩu</label>
+          <div className={styles.inputWrapper}>
+            <Lock className={styles.inputIcon} size={20} />
             <input 
-              type="checkbox" 
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
+              id="confirmPassword"
+              type={showPassword ? "text" : "password"} 
+              placeholder="••••••••" 
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className={styles.input}
             />
-            <span>Ghi nhớ đăng nhập</span>
-          </label>
-          <a href="#" className={styles.forgotLink}>Quên mật khẩu?</a>
+          </div>
         </div>
 
         <button type="submit" className={styles.submitBtn} disabled={loading}>
-          {loading ? "Đang xử lý..." : "→ Đăng nhập"}
+          {loading ? "Đang xử lý..." : "→] Đăng ký"}
         </button>
       </form>
 
       <div className={styles.registerPrompt}>
-        Chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
+        Đã có tài khoản? <Link to="/login">Đăng nhập</Link>
       </div>
 
       <div className={styles.demoNote}>
-        <strong>Demo:</strong> Nhấn đăng nhập với tài khoản <strong>admin / 123456</strong> để trải nghiệm
+        <strong>Demo:</strong> Nhấn đăng ký với bất kỳ thông tin nào để trải nghiệm
       </div>
     </div>
   );
 };
 
-export default LoginForm;
+export default RegisterForm;

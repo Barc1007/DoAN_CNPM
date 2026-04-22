@@ -8,8 +8,10 @@ import { useDashboardData } from "../hooks/useDashboardData";
 import { formatDate } from "../../../utils/formatDate";
 import { Plus } from "lucide-react";
 import styles from "./DashboardPage.module.css";
+import { useAuth } from "../../../features/auth/context/AuthContext";
 
 const DashboardPage: React.FC = () => {
+  const { user } = useAuth();
   const { data, isLoading, error } = useDashboardData();
 
   if (isLoading) {
@@ -31,7 +33,7 @@ const DashboardPage: React.FC = () => {
   return (
     <MainLayout>
       <header className={styles.header}>
-        <h1 className={styles.greeting}>Xin chào, Sinh viên! 👋</h1>
+        <h1 className={styles.greeting}>Xin chào, {user?.full_name || user?.username || "Sinh viên"}! 👋</h1>
         <p className={styles.date}>Hôm nay là ngày {formatDate(new Date())}</p>
       </header>
 

@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import styles from "./Sidebar.module.css";
 import clsx from "clsx";
+import { useAuth } from "../features/auth/context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 interface NavItem {
   icon: React.ElementType;
@@ -33,6 +35,20 @@ const navItems: NavItem[] = [
 ];
 
 const Sidebar: React.FC = () => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
+  // Ánh xạ thuộc tính snake_case từ schema User
+  const displayName = user?.full_name || user?.username || "Khách";
+  const displayEmail = user?.email || "guest@studentmoney.com";
+  // Sinh ký tự Avatar từ chữ cái đầu
+  const initials = displayName.split(" ").map(w => w[0]).join("").substring(0, 2).toUpperCase() || "SV";
+
   return (
     <aside className={styles.sidebar}>
       <div className={styles.logoContainer}>
@@ -62,12 +78,12 @@ const Sidebar: React.FC = () => {
       </nav>
 
       <div className={styles.profileCard}>
-        <div className={styles.avatar}>SV</div>
+        <div className={styles.avatar}>{initials}</div>
         <div className={styles.profileInfo}>
-          <p className={styles.profileName}>Sinh Viên A</p>
-          <p className={styles.profileEmail}>sinhvien@edu.vn</p>
+          <p className={styles.profileName}>{displayName}</p>
+          <p className={styles.profileEmail}>{displayEmail}</p>
         </div>
-        <button className={styles.logoutBtn}>
+        <button className={styles.logoutBtn} onClick={handleLogout} title="Đăng xuất">
           <LogOut size={16} />
         </button>
       </div>
