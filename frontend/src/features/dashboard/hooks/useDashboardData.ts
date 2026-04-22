@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import type { DashboardSummary } from "../../../types/dashboard";
-import { getDashboardSummary } from "../services/dashboardService";
+import { dashboardService } from "../services/dashboardService";
 
 export const useDashboardData = () => {
   const [data, setData] = useState<DashboardSummary | null>(null);
@@ -11,7 +11,7 @@ export const useDashboardData = () => {
     try {
       setIsLoading(true);
       setError(null);
-      const result = await getDashboardSummary();
+      const result = await dashboardService.getDashboardSummary();
       setData(result);
     } catch (err: any) {
       setError(err.message || "Failed to load dashboard data");

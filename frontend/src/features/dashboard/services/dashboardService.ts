@@ -1,15 +1,17 @@
-import apiClient, { IS_MOCK } from "../../../services/apiClient";
-import type { DashboardSummary, ApiResponse } from "../../../types/dashboard";
+import apiClient from "../../../services/apiClient";
+import type { DashboardSummary } from "../../../types/dashboard";
 import { MOCK_DASHBOARD_DATA } from "../../../data/mockDashboard";
 
-export const getDashboardSummary = async (): Promise<DashboardSummary> => {
-  if (IS_MOCK) {
-    // Simulate delay
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    return MOCK_DASHBOARD_DATA;
-  }
+const IS_MOCK = true;
 
-  const response = await apiClient.get<ApiResponse<DashboardSummary>>("/dashboard/summary");
-  // Ensure we return the .result property as required
-  return response.data.result;
+export const dashboardService = {
+  getDashboardSummary: async (): Promise<DashboardSummary> => {
+    if (IS_MOCK) {
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      return MOCK_DASHBOARD_DATA;
+    }
+
+    const response = await apiClient.get("/dashboard/summary");
+    return response.data.result as unknown as DashboardSummary;
+  },
 };

@@ -1,10 +1,10 @@
 import React from "react";
 import MainLayout from "../../layouts/MainLayout";
-import SummaryCard from "./components/SummaryCard";
-import GoalCard from "./components/GoalCard";
-import ChartCard from "./components/ChartCard";
-import TransactionList from "./components/TransactionList";
-import { useDashboardData } from "./hooks/useDashboardData";
+import SummaryCard from "../../features/dashboard/components/SummaryCard";
+import GoalCard from "../../features/dashboard/components/GoalCard";
+import ChartCard from "../../features/dashboard/components/ChartCard";
+import TransactionList from "../../features/dashboard/components/TransactionList";
+import { useDashboardData } from "../../features/dashboard/hooks/useDashboardData";
 import { formatDate } from "../../utils/formatDate";
 import { Plus } from "lucide-react";
 import styles from "./DashboardPage.module.css";

@@ -1,4 +1,4 @@
-import DashboardPage from './features/dashboard/DashboardPage'
+import DashboardPage from './pages/dashboard/DashboardPage'
 import './index.css'
 
 function App() {
