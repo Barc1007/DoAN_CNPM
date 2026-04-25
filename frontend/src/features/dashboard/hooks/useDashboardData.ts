@@ -6,7 +6,7 @@ export const useDashboardData = () => {
   const [data, setData] = useState<DashboardSummary | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
+  
   const fetchDashboardData = async () => {
     try {
       setIsLoading(true);

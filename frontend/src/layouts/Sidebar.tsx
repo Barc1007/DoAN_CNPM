@@ -9,21 +9,22 @@ import {
   Bell, 
   Settings, 
   LogOut,
-  Wallet2
+  Wallet2,
+  User
 } from "lucide-react";
 import styles from "./Sidebar.module.css";
 import clsx from "clsx";
 import { useAuth } from "../features/auth/context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 interface NavItem {
   icon: React.ElementType;
   label: string;
-  active?: boolean;
+  path?: string;
 }
 
 const navItems: NavItem[] = [
-  { icon: Home, label: "Trang chủ", active: true },
+  { icon: Home, label: "Trang chủ", path: "/dashboard" },
   { icon: Wallet, label: "Ví của tôi" },
   { icon: ArrowRightLeft, label: "Giao dịch" },
   { icon: LayoutGrid, label: "Danh mục" },
@@ -31,12 +32,14 @@ const navItems: NavItem[] = [
   { icon: Target, label: "Mục tiêu" },
   { icon: PieChart, label: "Báo cáo" },
   { icon: Bell, label: "Thông báo" },
+  { icon: User, label: "Hồ sơ cá nhân", path: "/profile" },
   { icon: Settings, label: "Cài đặt" },
 ];
 
 const Sidebar: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = () => {
     logout();
@@ -63,27 +66,45 @@ const Sidebar: React.FC = () => {
 
       <nav className={styles.nav}>
         <ul>
-          {navItems.map((item, index) => (
-            <li key={index}>
-              <a 
-                href="#" 
-                className={clsx(styles.navItem, item.active && styles.active)}
-              >
-                <item.icon size={20} />
-                <span>{item.label}</span>
-              </a>
-            </li>
-          ))}
+          {navItems.map((item, index) => {
+            const isActive = item.path ? location.pathname === item.path : false;
+            return (
+              <li key={index}>
+                <a 
+                  href={item.path || "#"} 
+                  className={clsx(styles.navItem, isActive && styles.active)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (item.path) navigate(item.path);
+                  }}
+                >
+                  <item.icon size={20} />
+                  <span>{item.label}</span>
+                </a>
+              </li>
+            );
+          })}
         </ul>
       </nav>
 
-      <div className={styles.profileCard}>
+      <div 
+        className={styles.profileCard} 
+        style={{ cursor: "pointer" }}
+        onClick={() => navigate("/profile")}
+      >
         <div className={styles.avatar}>{initials}</div>
         <div className={styles.profileInfo}>
           <p className={styles.profileName}>{displayName}</p>
           <p className={styles.profileEmail}>{displayEmail}</p>
         </div>
-        <button className={styles.logoutBtn} onClick={handleLogout} title="Đăng xuất">
+        <button 
+          className={styles.logoutBtn} 
+          onClick={(e) => {
+            e.stopPropagation();
+            handleLogout();
+          }} 
+          title="Đăng xuất"
+        >
           <LogOut size={16} />
         </button>
       </div>

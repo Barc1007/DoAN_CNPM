@@ -14,7 +14,7 @@ const RegisterForm: React.FC = () => {
     showPassword, togglePasswordVisibility,
     loading, error, handleSubmit
   } = useRegisterForm();
-
+  
   return (
     <div className={styles.container}>
       <div className={styles.logoRow}>
