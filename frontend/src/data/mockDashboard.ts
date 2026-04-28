@@ -22,7 +22,7 @@ export const MOCK_DASHBOARD_DATA: DashboardSummary = {
       transaction_id: 1,
       user_id: 1,
       wallet_id: 1,
-      category_id: 5, // ID của category 'Nhà ở'
+      category_id: 5,
       note: "Đóng tiền phòng trọ tháng 4",
       amount: 1500000,
       type: "expense",

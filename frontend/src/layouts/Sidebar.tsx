@@ -26,7 +26,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { icon: Home, label: "Trang chủ", path: "/dashboard" },
   { icon: Wallet, label: "Ví của tôi" },
-  { icon: ArrowRightLeft, label: "Giao dịch" },
+  { icon: ArrowRightLeft, label: "Giao dịch", path: "/transactions" },
   { icon: LayoutGrid, label: "Danh mục" },
   { icon: PieChart, label: "Ngân sách" },
   { icon: Target, label: "Mục tiêu" },

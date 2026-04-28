@@ -5,7 +5,6 @@ import { MOCK_USERS } from "../../../data/userData";
 const IS_MOCK = true;
 const STORAGE_KEY = "mock_users_data";
 
-// Helper to get users from localStorage or fallback to initial MOCK_USERS
 const getMockUsers = (): UserProfile[] => {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (stored) {
@@ -21,7 +20,6 @@ const getMockUsers = (): UserProfile[] => {
 export const profileService = {
   getProfile: async (userId?: number): Promise<ProfileResponse> => {
     if (IS_MOCK) {
-      // Simulate network delay
       await new Promise(resolve => setTimeout(resolve, 500));
       
       const users = getMockUsers();
