@@ -49,27 +49,9 @@ export const useTransactions = () => {
     });
   }, [allTransactions, filterType, searchQuery]);
 
-  /** Thống kê tổng thu, tổng chi, số giao dịch tháng hiện tại */
-  const stats = useMemo<TransactionStats>(() => {
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth() + 1; // 1-indexed
-
-    let totalIncome = 0;
-    let totalExpense = 0;
-    let currentMonthCount = 0;
-
-    for (const t of allTransactions) {
-      if (t.type === "INCOME") totalIncome += t.amount;
-      else totalExpense += t.amount;
-
-      const [year, month] = t.transaction_date.split("-").map(Number);
-      if (year === currentYear && month === currentMonth) {
-        currentMonthCount++;
-      }
-    }
-
-    return { totalIncome, totalExpense, currentMonthCount };
+  /** Thống kê tổng thu, tổng chi, số giao dịch tháng hiện tại - Chuyển sang Service */
+  const stats = useMemo(() => {
+    return transactionService.calculateSummaryStats(allTransactions);
   }, [allTransactions]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────

@@ -1,6 +1,6 @@
 import React from "react";
 import { Banknote, Building2, Smartphone, Folder } from "lucide-react";
-import type { Wallet } from "../../../../types/wallet";
+import type { Wallet } from "../../types/wallet";
 import styles from "./WalletCard.module.css";
 
 interface WalletCardProps {

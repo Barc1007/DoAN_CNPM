@@ -1,5 +1,5 @@
 import apiClient from "../../../services/apiClient";
-import type { Wallet } from "../../../types/wallet";
+import type { Wallet } from "../types/wallet";
 import { MOCK_WALLETS } from "../../../data/mockWallets";
 
 const IS_MOCK = true;

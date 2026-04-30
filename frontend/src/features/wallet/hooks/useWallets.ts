@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import type { Wallet } from "../../../types/wallet";
+import type { Wallet } from "../types/wallet";
 import { walletService } from "../services/walletService";
 import { useAuth } from "../../auth/context/AuthContext";
 

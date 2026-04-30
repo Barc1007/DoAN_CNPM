@@ -31,7 +31,7 @@ const navItems: NavItem[] = [
   { icon: PieChart, label: "Ngân sách" },
   { icon: Target, label: "Mục tiêu" },
   { icon: PieChart, label: "Báo cáo" },
-  { icon: Bell, label: "Thông báo" },
+  { icon: Bell, label: "Thông báo", path: "/notifications" },
   { icon: User, label: "Hồ sơ cá nhân", path: "/profile" },
   { icon: Settings, label: "Cài đặt" },
 ];

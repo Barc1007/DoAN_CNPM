@@ -6,7 +6,7 @@ import WalletCard from "../components/WalletCard/WalletCard";
 import AddWalletCard from "../components/AddWalletCard/AddWalletCard";
 import AddWalletModal from "../components/AddWalletModal/AddWalletModal";
 import { useWallets } from "../hooks/useWallets";
-import type { Wallet } from "../../../types/wallet";
+import type { Wallet } from "../types/wallet";
 import styles from "./WalletPage.module.css";
 
 const WalletPage: React.FC = () => {

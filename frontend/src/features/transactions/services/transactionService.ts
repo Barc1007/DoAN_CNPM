@@ -1,5 +1,5 @@
 import apiClient from "../../../services/apiClient";
-import type { Transaction } from "../types/transaction";
+import type { Transaction, TransactionStats } from "../types/transaction";
 import { MOCK_TRANSACTIONS } from "../../../data/mockTransactions";
 
 const IS_MOCK = true;
@@ -44,5 +44,31 @@ export const transactionService = {
 
     const response = await apiClient.post<any, Transaction>("/transactions", payload);
     return response;
+  },
+
+  /**
+   * Tính toán thống kê từ danh sách giao dịch (Business Logic)
+   */
+  calculateSummaryStats: (transactions: Transaction[]): TransactionStats => {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1; // 1-indexed
+
+    return transactions.reduce(
+      (acc, t) => {
+        // Cộng tổng thu/chi
+        if (t.type === "INCOME") acc.totalIncome += Number(t.amount);
+        else acc.totalExpense += Number(t.amount);
+
+        // Đếm số giao dịch trong tháng hiện tại
+        const [year, month] = t.transaction_date.split("-").map(Number);
+        if (year === currentYear && month === currentMonth) {
+          acc.currentMonthCount++;
+        }
+
+        return acc;
+      },
+      { totalIncome: 0, totalExpense: 0, currentMonthCount: 0 }
+    );
   },
 };
