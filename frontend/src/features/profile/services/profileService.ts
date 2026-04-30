@@ -1,5 +1,5 @@
 import apiClient from "../../../services/apiClient";
-import type { UserProfile, ProfileResponse } from "../../../types/profile";
+import type { UserProfile } from "../../../types/profile";
 import { MOCK_USERS } from "../../../data/userData";
 
 const IS_MOCK = true;
@@ -18,7 +18,7 @@ const getMockUsers = (): UserProfile[] => {
 };
 
 export const profileService = {
-  getProfile: async (userId?: number): Promise<ProfileResponse> => {
+  getProfile: async (userId?: number): Promise<UserProfile> => {
     if (IS_MOCK) {
       await new Promise(resolve => setTimeout(resolve, 500));
       
@@ -27,14 +27,14 @@ export const profileService = {
         ? users.find(u => u.user_id === userId) || users[0]
         : users[0];
         
-      return { result: user };
+      return user;
     }
 
-    const response = await apiClient.get<ProfileResponse>("/profile");
-    return response.data;
+    const response = await apiClient.get<any, UserProfile>("/profile");
+    return response;
   },
 
-  updateProfile: async (profileData: UserProfile): Promise<ProfileResponse> => {
+  updateProfile: async (profileData: UserProfile): Promise<UserProfile> => {
     if (IS_MOCK) {
       await new Promise(resolve => setTimeout(resolve, 800));
       
@@ -53,12 +53,12 @@ export const profileService = {
           }
         }
 
-        return { result: users[index] };
+        return users[index];
       }
       throw new Error("Không tìm thấy người dùng");
     }
 
-    const response = await apiClient.put<ProfileResponse>("/profile", profileData);
-    return response.data;
+    const response = await apiClient.put<any, UserProfile>("/profile", profileData);
+    return response;
   }
 };

@@ -11,7 +11,7 @@ export const dashboardService = {
       return MOCK_DASHBOARD_DATA;
     }
 
-    const response = await apiClient.get("/dashboard/summary");
-    return response.data.result as unknown as DashboardSummary;
+    const response = await apiClient.get<any, DashboardSummary>("/dashboard/summary");
+    return response;
   },
 };

@@ -1,5 +1,4 @@
 import apiClient from "../../../services/apiClient";
-import type { ApiResponse } from "../../../types/dashboard";
 import type { Transaction } from "../types/transaction";
 import { MOCK_TRANSACTIONS } from "../../../data/mockTransactions";
 
@@ -9,7 +8,7 @@ export const transactionService = {
   /**
    * Lấy danh sách toàn bộ giao dịch của user
    */
-  getTransactions: async (userId?: number): Promise<ApiResponse<Transaction[]>> => {
+  getTransactions: async (userId?: number): Promise<Transaction[]> => {
     if (IS_MOCK) {
       await new Promise((resolve) => setTimeout(resolve, 600));
 
@@ -17,17 +16,13 @@ export const transactionService = {
         ? MOCK_TRANSACTIONS.filter((t) => t.user_id === userId)
         : MOCK_TRANSACTIONS;
 
-      return {
-        status: 200,
-        message: "Lấy danh sách giao dịch thành công",
-        result: data,
-      };
+      return data;
     }
 
-    const response = await apiClient.get<ApiResponse<Transaction[]>>("/transactions", {
+    const response = await apiClient.get<any, Transaction[]>("/transactions", {
       params: { user_id: userId },
     });
-    return response.data;
+    return response;
   },
 
   /**
@@ -35,7 +30,7 @@ export const transactionService = {
    */
   createTransaction: async (
     payload: Omit<Transaction, "transaction_id">
-  ): Promise<ApiResponse<Transaction>> => {
+  ): Promise<Transaction> => {
     if (IS_MOCK) {
       await new Promise((resolve) => setTimeout(resolve, 800));
 
@@ -44,14 +39,10 @@ export const transactionService = {
         transaction_id: Date.now(),
       };
 
-      return {
-        status: 201,
-        message: "Tạo giao dịch thành công",
-        result: newTransaction,
-      };
+      return newTransaction;
     }
 
-    const response = await apiClient.post<ApiResponse<Transaction>>("/transactions", payload);
-    return response.data;
+    const response = await apiClient.post<any, Transaction>("/transactions", payload);
+    return response;
   },
 };

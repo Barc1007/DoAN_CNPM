@@ -22,9 +22,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (credentials: LoginRequest, rememberMe: boolean) => {
     const res = await authService.login(credentials);
-    if (res.status === 200 && res.result) {
-      setUser(res.result);
-      localStorage.setItem("user", JSON.stringify(res.result));
+    if (res) {
+      setUser(res);
+      localStorage.setItem("user", JSON.stringify(res));
       if (rememberMe) {
         localStorage.setItem("username", credentials.username);
       } else {

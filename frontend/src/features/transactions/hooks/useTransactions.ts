@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from "react";
 import type { Transaction, FilterType, TransactionStats } from "../types/transaction";
 import { transactionService } from "../services/transactionService";
 import { useAuth } from "../../auth/context/AuthContext";
-// ApiResponse<T> được trả về từ service; hook chỉ lấy .result
 
 export const useTransactions = () => {
   const { user } = useAuth();
@@ -21,7 +20,7 @@ export const useTransactions = () => {
       setIsLoading(true);
       setError(null);
       const response = await transactionService.getTransactions(user?.user_id);
-      setAllTransactions(response.result);
+      setAllTransactions(response);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Lỗi tải giao dịch";
       setError(message);

@@ -18,8 +18,8 @@ export const useProfileData = () => {
         setLoading(true);
         setError(null);
         const data = await profileService.getProfile(user?.user_id);
-        setProfileData(data.result);
-        setEditedData(data.result);
+        setProfileData(data);
+        setEditedData(data);
       } catch (err) {
         console.error("Error fetching profile data:", err);
         setError("Không thể tải thông tin hồ sơ.");
@@ -47,7 +47,7 @@ export const useProfileData = () => {
       setSaving(true);
       setError(null);
       const data = await profileService.updateProfile(editedData);
-      setProfileData(data.result);
+      setProfileData(data);
       setIsEditing(false);
       // Optional: Show success message
     } catch (err) {
