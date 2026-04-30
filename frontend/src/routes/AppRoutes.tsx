@@ -6,6 +6,7 @@ import RegisterPage from '../features/auth/pages/RegisterPage/RegisterPage';
 import ProfilePage from '../features/profile/pages/ProfilePage';
 import TransactionsPage from '../features/transactions/pages/TransactionsPage';
 import CategoryPage from '../features/category/pages/CategoryPage';
+import WalletPage from '../features/wallet/pages/WalletPage';
 
 const AppRoutes: React.FC = () => {
   return (
@@ -17,6 +18,7 @@ const AppRoutes: React.FC = () => {
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/transactions" element={<TransactionsPage />} />
       <Route path="/categories" element={<CategoryPage />} />
+      <Route path="/wallet" element={<WalletPage />} />
     </Routes>
   );
 };
