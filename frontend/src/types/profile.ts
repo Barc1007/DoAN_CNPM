@@ -1,4 +1,4 @@
-import { User } from "../features/auth/types/auth";
+import type { User } from "../features/auth/types/auth";
 
 export interface UserProfile extends User {
   phone?: string;

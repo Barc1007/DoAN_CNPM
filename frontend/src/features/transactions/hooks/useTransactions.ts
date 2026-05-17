@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import type { Transaction, FilterType, TransactionStats } from "../types/transaction";
+import type { Transaction, FilterType } from "../types/transaction";
 import { transactionService } from "../services/transactionService";
 import { useAuth } from "../../auth/context/AuthContext";
 

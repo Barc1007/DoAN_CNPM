@@ -3,8 +3,6 @@ import type { Notification } from "../types/notification";
 import { mockNotifications } from "../../../data/mockNotifications";
 
 const IS_MOCK = true;
-
-// In-memory mock data state for this session
 let currentNotifications = [...mockNotifications];
 
 export const notificationService = {
@@ -51,11 +49,9 @@ export const notificationService = {
       });
       return true;
     }
-
     const response = await apiClient.patch<any, boolean>("/notifications/read-all", { user_id: userId });
     return response;
   },
-
   deleteNotification: async (notificationId: number): Promise<boolean> => {
     if (IS_MOCK) {
       await new Promise((resolve) => setTimeout(resolve, 300));
@@ -66,7 +62,6 @@ export const notificationService = {
       }
       throw new Error("Notification not found");
     }
-
     await apiClient.delete(`/notifications/${notificationId}`);
     return true;
   }

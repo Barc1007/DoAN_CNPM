@@ -7,7 +7,6 @@ interface SummaryHeaderProps {
   walletCount: number;
   activeCount: number;
 }
-
 const SummaryHeader: React.FC<SummaryHeaderProps> = ({
   totalBalance,
   walletCount,
