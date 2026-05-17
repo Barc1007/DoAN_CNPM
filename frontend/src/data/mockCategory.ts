@@ -7,6 +7,13 @@ export const MOCK_EXPENSE_DATA: CategoryData = {
     total_categories: 8,
     average_per_category: 2450000,
     top_category_name: "Thuê nhà",
+    budget: {
+      total_budget: 25200000,
+      total_remaining: 5600000,
+      budgeted_categories: 8,
+      over_budget_categories: 1,
+      near_limit_categories: 3,
+    },
   },
   categories: [
     {
@@ -18,6 +25,7 @@ export const MOCK_EXPENSE_DATA: CategoryData = {
       transaction_count: 4,
       total_amount: 6000000,
       percentage: 30.6,
+      budget_limit: 6500000,
     },
     {
       category_id: 2,
@@ -28,6 +36,7 @@ export const MOCK_EXPENSE_DATA: CategoryData = {
       transaction_count: 2,
       total_amount: 5000000,
       percentage: 25.5,
+      budget_limit: 5500000,
     },
     {
       category_id: 3,
@@ -38,6 +47,7 @@ export const MOCK_EXPENSE_DATA: CategoryData = {
       transaction_count: 45,
       total_amount: 3600000,
       percentage: 18.3,
+      budget_limit: 4200000,
     },
     {
       category_id: 4,
@@ -48,6 +58,7 @@ export const MOCK_EXPENSE_DATA: CategoryData = {
       transaction_count: 15,
       total_amount: 2500000,
       percentage: 12.7,
+      budget_limit: 3000000,
     },
     {
       category_id: 5,
@@ -58,6 +69,7 @@ export const MOCK_EXPENSE_DATA: CategoryData = {
       transaction_count: 30,
       total_amount: 1800000,
       percentage: 9.1,
+      budget_limit: 2200000,
     },
     {
       category_id: 6,
@@ -68,6 +80,7 @@ export const MOCK_EXPENSE_DATA: CategoryData = {
       transaction_count: 10,
       total_amount: 1500000,
       percentage: 7.6,
+      budget_limit: 1300000,
     },
     {
       category_id: 7,
@@ -78,6 +91,7 @@ export const MOCK_EXPENSE_DATA: CategoryData = {
       transaction_count: 7,
       total_amount: 1200000,
       percentage: 6.1,
+      budget_limit: 1500000,
     },
     {
       category_id: 8,
@@ -88,6 +102,7 @@ export const MOCK_EXPENSE_DATA: CategoryData = {
       transaction_count: 30,
       total_amount: 800000,
       percentage: 4.0,
+      budget_limit: 1000000,
     },
   ],
 };

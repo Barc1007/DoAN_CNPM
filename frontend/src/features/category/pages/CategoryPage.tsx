@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./CategoryPage.module.css";
 import { useCategoryData } from "../hooks/useCategoryData";
 import CategoryHeader from "../components/CategoryHeader/CategoryHeader";
@@ -7,7 +8,20 @@ import CategoryCard from "../components/CategoryCard/CategoryCard";
 import MainLayout from "../../../layouts/MainLayout";
 
 const CategoryPage: React.FC = () => {
-  const { type, data, isLoading, error, handleTabChange } = useCategoryData("expense");
+  const navigate = useNavigate();
+  const {
+    type,
+    data,
+    isLoading,
+    error,
+    handleTabChange,
+    updateCategoryBudget,
+    updateCategoryName,
+  } = useCategoryData("expense");
+
+  const handleViewTransactions = (categoryName: string) => {
+    navigate(`/transactions?category=${encodeURIComponent(categoryName)}`);
+  };
 
   if (isLoading) {
     return (
@@ -39,7 +53,13 @@ const CategoryPage: React.FC = () => {
             
             <div className={styles.gridContainer}>
               {data.categories.map((category) => (
-                <CategoryCard key={category.category_id} category={category} />
+                <CategoryCard
+                  key={category.category_id}
+                  category={category}
+                  onUpdateBudget={updateCategoryBudget}
+                  onUpdateCategoryName={updateCategoryName}
+                  onViewTransactions={handleViewTransactions}
+                />
               ))}
             </div>
           </>
