@@ -1,59 +1,70 @@
 .headerContainer {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  margin-bottom: 24px;
+  gap: 20px;
 }
 
 .topSection {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 20px;
 }
 
 .titleWrapper {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.titleIcon {
+  color: var(--color-primary-dark);
 }
 
 .title {
   margin: 0;
-  font-size: 24px;
+  font-size: 30px;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--color-text-main);
 }
 
 .subtitle {
   margin: 0;
-  font-size: 14px;
-  color: #6b7280;
+  font-size: 15px;
+  color: var(--color-text-muted);
 }
 
 .addButton {
-  background: linear-gradient(135deg, #4ade80 0%, #facc15 100%);
-  color: white;
-  border: none;
-  padding: 10px 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-primary);
+  color: var(--color-white);
+  padding: 10px 16px;
   border-radius: 8px;
   font-weight: 600;
   font-size: 14px;
-  cursor: pointer;
-  transition: opacity 0.2s, transform 0.2s;
-  box-shadow: 0 4px 6px -1px rgba(74, 222, 128, 0.2);
+  transition: background-color 0.2s, transform 0.2s;
 }
 
 .addButton:hover {
-  opacity: 0.9;
+  background: var(--color-primary-dark);
   transform: translateY(-1px);
 }
 
 .tabsContainer {
   display: flex;
-  background-color: white;
-  border-radius: 12px;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
   padding: 6px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  max-width: 520px;
 }
 
 .tabButton {
@@ -61,30 +72,37 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 12px;
-  border: none;
+  padding: 11px 12px;
   background: transparent;
-  border-radius: 8px;
+  border-radius: 6px;
   font-size: 14px;
   font-weight: 600;
-  color: #6b7280;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.tabIcon {
-  font-size: 16px;
+  color: var(--color-text-muted);
+  transition: background-color 0.2s, color 0.2s;
 }
 
 .activeExpense {
-  background-color: #e11d48;
-  color: white;
-  box-shadow: 0 4px 6px -1px rgba(225, 29, 72, 0.2);
+  background-color: #fff1f2;
+  color: #be123c;
 }
 
 .activeIncome {
-  background-color: #10b981;
-  color: white;
-  box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);
+  background-color: #ecfdf5;
+  color: #047857;
+}
+
+@media (max-width: 760px) {
+  .topSection {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .tabsContainer,
+  .addButton {
+    width: 100%;
+  }
 }

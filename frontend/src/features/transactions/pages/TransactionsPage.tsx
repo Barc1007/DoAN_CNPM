@@ -1,4 +1,5 @@
 import React from "react";
+import { useSearchParams } from "react-router-dom";
 import { CreditCard, Plus } from "lucide-react";
 import MainLayout from "../../../layouts/MainLayout";
 import { useTransactions } from "../hooks/useTransactions";
@@ -8,6 +9,8 @@ import TransactionList from "../components/TransactionList/TransactionList";
 import styles from "./TransactionsPage.module.css";
 
 const TransactionsPage: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const categoryQuery = searchParams.get("category") || "";
   const {
     filteredTransactions,
     stats,
@@ -17,7 +20,7 @@ const TransactionsPage: React.FC = () => {
     searchQuery,
     handleFilterChange,
     handleSearchChange,
-  } = useTransactions();
+  } = useTransactions(categoryQuery);
 
   return (
     <MainLayout>

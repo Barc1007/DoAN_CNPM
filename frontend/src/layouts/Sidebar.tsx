@@ -28,12 +28,11 @@ const navItems: NavItem[] = [
   { icon: Wallet, label: "Ví của tôi", path: "/wallet" },
   { icon: ArrowRightLeft, label: "Giao dịch", path: "/transactions" },
   { icon: LayoutGrid, label: "Danh mục", path: "/categories" },
-  { icon: PieChart, label: "Ngân sách" },
-  { icon: Target, label: "Mục tiêu" },
+  { icon: Target, label: "Mục tiêu", path: "/goals" },
   { icon: PieChart, label: "Báo cáo" },
   { icon: Bell, label: "Thông báo", path: "/notifications" },
   { icon: User, label: "Hồ sơ cá nhân", path: "/profile" },
-  { icon: Settings, label: "Cài đặt" },
+  { icon: Settings, label: "Cài đặt", path: "/settings" },
 ];
 
 const Sidebar: React.FC = () => {

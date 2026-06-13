@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo } from "react";
-import type { Transaction, FilterType, TransactionStats } from "../types/transaction";
+import type { Transaction, FilterType } from "../types/transaction";
 import { transactionService } from "../services/transactionService";
 import { useAuth } from "../../auth/context/AuthContext";
 
-export const useTransactions = () => {
+export const useTransactions = (initialSearchQuery = "") => {
   const { user } = useAuth();
 
   const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
@@ -12,7 +12,7 @@ export const useTransactions = () => {
 
   // Filter & Search state
   const [filterType, setFilterType] = useState<FilterType>("ALL");
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState<string>(initialSearchQuery);
 
   // ── Fetch ────────────────────────────────────────────────────────────────
   const fetchTransactions = async () => {
@@ -30,7 +30,10 @@ export const useTransactions = () => {
   };
 
   useEffect(() => {
+    // Keep transaction fetching tied to the active user.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchTransactions();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.user_id]);
 
 

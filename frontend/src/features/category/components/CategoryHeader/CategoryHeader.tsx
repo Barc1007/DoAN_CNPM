@@ -1,9 +1,11 @@
 import React from "react";
+import { LayoutGrid, Plus } from "lucide-react";
 import styles from "./CategoryHeader.module.css";
+import type { CategoryType } from "../../../../types/category";
 
 interface CategoryHeaderProps {
-  activeTab: "expense" | "income";
-  onTabChange: (tab: "expense" | "income") => void;
+  activeTab: CategoryType;
+  onTabChange: (tab: CategoryType) => void;
 }
 
 const CategoryHeader: React.FC<CategoryHeaderProps> = ({
@@ -11,29 +13,38 @@ const CategoryHeader: React.FC<CategoryHeaderProps> = ({
   onTabChange,
 }) => {
   return (
-    <div className={styles.headerContainer}>
+    <header className={styles.headerContainer}>
       <div className={styles.topSection}>
         <div className={styles.titleWrapper}>
-          <h1 className={styles.title}>Quản lý Danh mục 🏷️</h1>
-          <p className={styles.subtitle}>Tùy chỉnh các danh mục thu chi của bạn</p>
+          <div className={styles.titleRow}>
+            <LayoutGrid size={26} className={styles.titleIcon} />
+            <h1 className={styles.title}>Danh mục & ngân sách</h1>
+          </div>
+          <p className={styles.subtitle}>Theo dõi mức chi từng danh mục trong tháng</p>
         </div>
+        <button className={styles.addButton} type="button" title="Thêm danh mục">
+          <Plus size={18} />
+          <span>Thêm danh mục</span>
+        </button>
       </div>
 
       <div className={styles.tabsContainer}>
         <button
+          type="button"
           className={`${styles.tabButton} ${activeTab === "expense" ? styles.activeExpense : ""}`}
           onClick={() => onTabChange("expense")}
         >
-          <span className={styles.tabIcon}>📉</span> Chi tiêu
+          Chi tiêu theo danh mục
         </button>
         <button
+          type="button"
           className={`${styles.tabButton} ${activeTab === "income" ? styles.activeIncome : ""}`}
           onClick={() => onTabChange("income")}
         >
-          <span className={styles.tabIcon}>📈</span> Thu nhập
+          Nguồn thu
         </button>
       </div>
-    </div>
+    </header>
   );
 };
 

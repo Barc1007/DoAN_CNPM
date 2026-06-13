@@ -1,0 +1,48 @@
+import type { SavingGoal } from "../types/goal";
+
+export const MOCK_GOALS: SavingGoal[] = [
+  {
+    goal_id: 1,
+    user_id: 1,
+    wallet_id: 1,
+    name: "Mua laptop mới",
+    target_amount: 15000000,
+    current_amount: 12450000,
+    start_date: "2026-01-10",
+    end_date: "2026-06-30",
+    status: "active",
+  },
+  {
+    goal_id: 2,
+    user_id: 1,
+    wallet_id: 1,
+    name: "Du lịch hè",
+    target_amount: 3000000,
+    current_amount: 800000,
+    start_date: "2026-03-01",
+    end_date: "2026-07-15",
+    status: "active",
+  },
+  {
+    goal_id: 3,
+    user_id: 1,
+    wallet_id: 2,
+    name: "Khóa học tiếng Anh",
+    target_amount: 5000000,
+    current_amount: 2500000,
+    start_date: "2026-02-15",
+    end_date: "2026-09-01",
+    status: "active",
+  },
+  {
+    goal_id: 4,
+    user_id: 1,
+    wallet_id: 2,
+    name: "Mua xe đạp",
+    target_amount: 2000000,
+    current_amount: 1500000,
+    start_date: "2026-04-01",
+    end_date: "2026-05-30",
+    status: "active",
+  },
+];

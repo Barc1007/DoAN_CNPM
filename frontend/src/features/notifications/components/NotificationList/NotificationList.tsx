@@ -10,7 +10,7 @@ interface NotificationListProps {
   onDelete: (id: number) => void;
 }
 
-const NotificationList: React.FC<NotificationListProps> = ({
+const NotificationList: React.FC<NotificationListProps> =({
   notifications,
   isLoading,
   onMarkAsRead,
