@@ -6,7 +6,7 @@
 
 .primaryCard,
 .metricCard {
-  background: var(--color-white);
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 8px;
 }
@@ -31,7 +31,7 @@
 }
 
 .primaryIcon {
-  background: #ecfdf5;
+  background: var(--color-primary-soft);
   color: var(--color-primary-dark);
 }
 
@@ -83,23 +83,23 @@
 }
 
 .budget .metricIcon {
-  background: #eff6ff;
-  color: #2563eb;
+  background: #e7edf5;
+  color: #4f6f9f;
 }
 
 .safe .metricIcon {
-  background: #ecfdf5;
-  color: #047857;
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
 }
 
 .warning .metricIcon {
-  background: #fff7ed;
-  color: #c2410c;
+  background: #f7eddb;
+  color: #9b6f20;
 }
 
 .danger .metricIcon {
-  background: #fff1f2;
-  color: #be123c;
+  background: #f6e2e5;
+  color: #9b3f4c;
 }
 
 @media (max-width: 1100px) {

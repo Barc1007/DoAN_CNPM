@@ -6,10 +6,10 @@
 
 .card {
   min-height: 118px;
-  background: var(--color-white);
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 12px;
-  box-shadow: 0 10px 24px rgba(17, 24, 39, 0.08);
+  box-shadow: var(--shadow-soft);
   padding: 22px 24px;
   display: flex;
   flex-direction: column;
@@ -18,7 +18,7 @@
 }
 
 .primary {
-  background: linear-gradient(135deg, #45c7c3 0%, #ffd43b 100%);
+  background: linear-gradient(135deg, #4ea8a1 0%, #b8a15d 100%);
   border: none;
   color: var(--color-white);
 }
@@ -43,7 +43,7 @@
 }
 
 .teal {
-  color: var(--color-primary-light);
+  color: var(--color-primary);
 }
 
 @media (max-width: 980px) {

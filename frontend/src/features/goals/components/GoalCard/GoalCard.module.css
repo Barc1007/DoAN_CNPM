@@ -1,10 +1,10 @@
 .card {
   position: relative;
   overflow: hidden;
-  background: var(--color-white);
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 12px;
-  box-shadow: 0 10px 24px rgba(17, 24, 39, 0.1);
+  box-shadow: var(--shadow-soft);
   padding: 24px;
 }
 
@@ -76,7 +76,7 @@
 .track {
   width: 100%;
   height: 12px;
-  background: #f3f4f6;
+  background: #e5e9ee;
   border-radius: 999px;
   overflow: hidden;
   margin-bottom: 16px;
@@ -122,55 +122,55 @@
 }
 
 .teal {
-  color: #45c7c3;
+  color: var(--color-primary);
 }
 
 .teal::after,
 .teal .iconBox {
-  background: #d9f6f3;
+  background: var(--color-primary-soft);
 }
 
 .teal .fill {
-  background: #45c7c3;
+  background: var(--color-primary);
 }
 
 .coral {
-  color: #ff6b6b;
+  color: var(--color-danger);
 }
 
 .coral::after,
 .coral .iconBox {
-  background: #ffe4e6;
+  background: #f6e2e5;
 }
 
 .coral .fill {
-  background: #ff6b6b;
+  background: var(--color-danger);
 }
 
 .yellow {
-  color: #facc15;
+  color: var(--color-warning);
 }
 
 .yellow::after,
 .yellow .iconBox {
-  background: #fef9c3;
+  background: #f7eddb;
 }
 
 .yellow .fill {
-  background: #facc15;
+  background: var(--color-warning);
 }
 
 .violet {
-  color: #a29bfe;
+  color: #6f638f;
 }
 
 .violet::after,
 .violet .iconBox {
-  background: #ede9fe;
+  background: #ebe7f2;
 }
 
 .violet .fill {
-  background: #a29bfe;
+  background: #6f638f;
 }
 
 @media (max-width: 620px) {

@@ -12,10 +12,10 @@ export const MOCK_DASHBOARD_DATA: DashboardSummary = {
     end_date: "2026-12-31",
   },
   category_spent: [
-    { name: "Tiền trọ & điện nước", amount: 1500000, percentage: 60.0, color: "#4ECDC4" },
-    { name: "Ăn uống 3 bữa", amount: 800000, percentage: 32.0, color: "#FF6B6B" },
-    { name: "Cafe/Trà sữa", amount: 150000, percentage: 6.0, color: "#FFE66D" },
-    { name: "Nạp thẻ điện thoại", amount: 50000, percentage: 2.0, color: "#A29BFE" },
+    { name: "Tiền trọ & điện nước", amount: 1500000, percentage: 60.0, color: "#2f8f89" },
+    { name: "Ăn uống 3 bữa", amount: 800000, percentage: 32.0, color: "#b95662" },
+    { name: "Cafe/Trà sữa", amount: 150000, percentage: 6.0, color: "#b8a15d" },
+    { name: "Nạp thẻ điện thoại", amount: 50000, percentage: 2.0, color: "#6f638f" },
   ],
   recent_transactions: [
     {

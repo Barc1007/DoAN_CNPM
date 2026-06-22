@@ -19,19 +19,19 @@
 
 /* Per-type gradient backgrounds */
 .cash {
-  background: linear-gradient(135deg, #00c6a3 0%, #00a884 100%);
+  background: linear-gradient(135deg, #4ea8a1 0%, #2f8f89 100%);
 }
 
 .bank {
-  background: linear-gradient(135deg, #6c63ff 0%, #4a47e0 100%);
+  background: linear-gradient(135deg, #6f88b8 0%, #4f638f 100%);
 }
 
 .ewallet {
-  background: linear-gradient(135deg, #ff4e8c 0%, #e0136a 100%);
+  background: linear-gradient(135deg, #c77a86 0%, #a74756 100%);
 }
 
 .other {
-  background: linear-gradient(135deg, #ff9a3c 0%, #e07000 100%);
+  background: linear-gradient(135deg, #d6a64e 0%, #b87935 100%);
 }
 
 /* Decorative circle */

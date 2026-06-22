@@ -20,23 +20,23 @@
   gap: 12px;
   font-size: 32px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-text-main);
   margin: 0;
 }
 
 .titleIcon {
-  color: #64748b;
+  color: var(--color-text-muted);
   opacity: 0.6;
 }
 
 .subtitle {
   font-size: 16px;
-  color: #64748b;
+  color: var(--color-text-muted);
   margin: 0;
 }
 
 .userCard {
-  background: linear-gradient(135deg, #a7f3d0 0%, #fde68a 100%);
+  background: linear-gradient(135deg, #4ea8a1 0%, #b8a15d 100%);
   border-radius: 24px;
   padding: 32px;
   display: flex;
@@ -44,7 +44,7 @@
   gap: 24px;
   margin-bottom: 32px;
   position: relative;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-soft);
   border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
@@ -71,20 +71,20 @@
 .userName {
   font-size: 24px;
   font-weight: 700;
-  color: #065f46;
+  color: var(--color-white);
   margin: 0 0 4px 0;
 }
 
 .userEmail {
   font-size: 14px;
-  color: #047857;
+  color: rgba(255, 255, 255, 0.9);
   margin: 0 0 4px 0;
   opacity: 0.8;
 }
 
 .userJoinDate {
   font-size: 12px;
-  color: #047857;
+  color: rgba(255, 255, 255, 0.78);
   margin: 0;
   opacity: 0.6;
 }
@@ -96,7 +96,7 @@
   border-radius: 20px;
   font-size: 14px;
   font-weight: 600;
-  color: #065f46;
+  color: var(--color-primary-dark);
   cursor: pointer;
   transition: all 0.2s ease;
   backdrop-filter: blur(4px);

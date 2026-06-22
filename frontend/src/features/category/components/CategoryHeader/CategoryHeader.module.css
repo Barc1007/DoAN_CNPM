@@ -60,7 +60,7 @@
 
 .tabsContainer {
   display: flex;
-  background-color: var(--color-white);
+  background-color: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 6px;
@@ -82,13 +82,13 @@
 }
 
 .activeExpense {
-  background-color: #fff1f2;
-  color: #be123c;
+  background-color: #f6e2e5;
+  color: #9b3f4c;
 }
 
 .activeIncome {
-  background-color: #ecfdf5;
-  color: #047857;
+  background-color: var(--color-primary-soft);
+  color: var(--color-primary-dark);
 }
 
 @media (max-width: 760px) {

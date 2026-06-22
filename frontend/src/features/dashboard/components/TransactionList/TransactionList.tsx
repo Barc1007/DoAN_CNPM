@@ -1,5 +1,6 @@
 import React from "react";
 import { Utensils, GraduationCap, Coffee } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import styles from "./TransactionList.module.css";
 import { formatMoney } from "../../../../utils/formatMoney";
 import { formatShortDate } from "../../../../utils/formatDate";
@@ -10,10 +11,15 @@ interface TransactionListProps {
   transactions: Transaction[];
 }
 
-const CATEGORY_ICONS: Record<number, any> = {
-  5: { icon: Utensils, color: "#4ECDC4" }, // Fallback for 5
-  6: { icon: Coffee, color: "#FF6B6B" },
-  10: { icon: GraduationCap, color: "#4ECDC4" },
+interface CategoryIconConfig {
+  icon: LucideIcon;
+  color: string;
+}
+
+const CATEGORY_ICONS: Record<number, CategoryIconConfig> = {
+  5: { icon: Utensils, color: "#2f8f89" }, // Fallback for 5
+  6: { icon: Coffee, color: "#b95662" },
+  10: { icon: GraduationCap, color: "#2f8f89" },
 };
 
 const TransactionList: React.FC<TransactionListProps> = ({ transactions }) => {

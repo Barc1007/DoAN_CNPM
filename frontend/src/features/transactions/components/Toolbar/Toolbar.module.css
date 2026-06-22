@@ -17,37 +17,37 @@
   left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  color: #9ca3af;
+  color: var(--color-text-muted);
   pointer-events: none;
 }
 
 .searchInput {
   width: 100%;
   padding: 10px 14px 10px 40px;
-  border: 1.5px solid #e5e7eb;
+  border: 1.5px solid var(--color-border);
   border-radius: 10px;
   font-size: 14px;
-  color: #374151;
-  background: #ffffff;
+  color: var(--color-text-main);
+  background: var(--color-surface);
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   box-sizing: border-box;
 }
 
 .searchInput::placeholder {
-  color: #9ca3af;
+  color: var(--color-text-muted);
 }
 
 .searchInput:focus {
-  border-color: #10b981;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(47, 143, 137, 0.12);
 }
 
 .filterGroup {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #f3f4f6;
+  background: var(--color-surface-muted);
   border-radius: 10px;
   padding: 4px;
 }
@@ -60,18 +60,18 @@
   font-weight: 500;
   cursor: pointer;
   background: transparent;
-  color: #6b7280;
+  color: var(--color-text-muted);
   transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
   white-space: nowrap;
 }
 
 .filterBtn:hover:not(.active) {
-  background: #e5e7eb;
-  color: #374151;
+  background: var(--color-border);
+  color: var(--color-text-main);
 }
 
 .filterBtn.active {
-  background: #10b981;
+  background: var(--color-primary);
   color: #ffffff;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+  box-shadow: 0 2px 8px rgba(47, 143, 137, 0.24);
 }

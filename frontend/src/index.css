@@ -4,22 +4,26 @@
   --font-primary: 'Inter', system-ui, -apple-system, sans-serif;
   
   /* Brand Colors */
-  --color-primary: #14B8A6;
-  --color-primary-light: #2DD4BF;
-  --color-primary-dark: #0D9488;
-  --color-gradient-teal: linear-gradient(135deg, #2DD4BF 0%, #14B8A6 100%);
+  --color-primary: #2f8f89;
+  --color-primary-light: #4ea8a1;
+  --color-primary-dark: #23716d;
+  --color-primary-soft: #e3f1ef;
+  --color-gradient-teal: linear-gradient(135deg, #4ea8a1 0%, #2f8f89 100%);
   
   /* UI Colors */
-  --color-bg: #F9FAFB;
-  --color-white: #FFFFFF;
-  --color-text-main: #111827;
-  --color-text-muted: #6B7280;
-  --color-border: #E5E7EB;
+  --color-bg: #eef1f4;
+  --color-white: #fbfcfd;
+  --color-surface: #fbfcfd;
+  --color-surface-muted: #f4f6f8;
+  --color-text-main: #1f2933;
+  --color-text-muted: #667085;
+  --color-border: #d8dee6;
+  --shadow-soft: 0 12px 28px rgba(31, 41, 51, 0.08);
   
   /* Status Colors */
-  --color-success: #10B981;
-  --color-danger: #EF4444;
-  --color-warning: #F59E0B;
+  --color-success: #2f8f6b;
+  --color-danger: #c05a67;
+  --color-warning: #d19832;
 }
 
 * {

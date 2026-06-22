@@ -27,12 +27,12 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #4ade80 0%, #10b981 100%);
+  background: var(--color-gradient-teal);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 10px 18px rgba(47, 143, 137, 0.22);
   transition: transform 0.2s;
 }
 

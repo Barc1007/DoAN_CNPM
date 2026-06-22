@@ -1,0 +1,27 @@
+.panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 22px;
+  box-shadow: var(--shadow-soft);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.header h2 {
+  margin: 0;
+  color: var(--color-text-main);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.icon {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}

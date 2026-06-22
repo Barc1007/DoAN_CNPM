@@ -1,10 +1,10 @@
 .card {
   position: relative;
-  background: var(--color-white);
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 26px;
-  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
+  box-shadow: var(--shadow-soft);
   transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
 }
 
@@ -76,18 +76,18 @@
 }
 
 .statusOk {
-  background: #e9fbf8;
-  color: #18aaa2;
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
 }
 
 .statusWarning {
-  background: #fff7db;
-  color: #eab308;
+  background: #f7eddb;
+  color: #9b6f20;
 }
 
 .statusDanger {
-  background: #fff1f2;
-  color: #be123c;
+  background: #f6e2e5;
+  color: #9b3f4c;
 }
 
 .statusNeutral {
@@ -109,7 +109,7 @@
   align-items: center;
   justify-content: center;
   color: #475569;
-  background: #f8fafc;
+  background: var(--color-surface-muted);
   border: 1px solid #e5e7eb;
 }
 
@@ -128,7 +128,7 @@
 .iconButton:hover,
 .saveButton:hover {
   border-color: #cbd5e1;
-  background: var(--color-white);
+  background: var(--color-surface);
 }
 
 .budgetBlock {
@@ -160,7 +160,7 @@
 
 .progressBarBg {
   height: 13px;
-  background: #f1f2f4;
+  background: #e5e9ee;
   border-radius: 999px;
   overflow: hidden;
 }
@@ -172,15 +172,15 @@
 }
 
 .fillOk {
-  background: #ff676f;
+  background: #c05a67;
 }
 
 .fillWarning {
-  background: #facc15;
+  background: #d19832;
 }
 
 .fillDanger {
-  background: #ef4444;
+  background: var(--color-danger);
 }
 
 .fillNeutral {
@@ -188,12 +188,12 @@
 }
 
 .fillIncome {
-  background: #2563eb;
+  background: #4f6f9f;
 }
 
 .divider {
   height: 1px;
-  background: #e7ebf0;
+  background: var(--color-border);
   margin: 20px 0 18px;
 }
 
@@ -222,7 +222,7 @@
 }
 
 .remainingValue {
-  color: #45c7c3 !important;
+  color: var(--color-primary) !important;
 }
 
 .negative {

@@ -1,7 +1,7 @@
 .filterContainer {
   display: flex;
   gap: 12px;
-  background-color: #ffffff;
+  background-color: var(--color-surface);
   padding: 12px 24px;
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
@@ -31,12 +31,12 @@
 }
 
 .activeTab {
-  background-color: #48c4b7; /* Teal variant */
+  background-color: var(--color-primary);
   color: white;
 }
 
 .activeTab:hover {
-  background-color: #3eb0a4;
+  background-color: var(--color-primary-dark);
   color: white;
 }
 
@@ -46,7 +46,7 @@
 }
 
 .badge {
-  background-color: #f59e0b;
+  background-color: var(--color-warning);
   color: white;
   font-size: 12px;
   font-weight: 600;

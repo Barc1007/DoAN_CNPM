@@ -1,6 +1,6 @@
 .banner {
   flex: 1;
-  background: linear-gradient(135deg, #4ECDC4 0%, #FFE66D 100%);
+  background: linear-gradient(135deg, #4ea8a1 0%, #b8a15d 100%);
   display: flex;
   flex-direction: column;
   justify-content: center;

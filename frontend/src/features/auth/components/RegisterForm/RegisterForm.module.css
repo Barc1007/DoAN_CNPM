@@ -19,7 +19,7 @@
 .logoIcon {
   width: 48px;
   height: 48px;
-  background: white;
+  background: var(--color-surface);
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -36,12 +36,12 @@
   font-size: 1.5rem;
   font-weight: 700;
   margin: 0;
-  color: #2D3748;
+  color: var(--color-text-main);
 }
 
 .brandSubtitle {
   font-size: 0.85rem;
-  color: #718096;
+  color: var(--color-text-muted);
   margin: 0;
 }
 
@@ -52,12 +52,12 @@
 .header h2 {
   font-size: 2.2rem;
   font-weight: 700;
-  color: #2D3748;
+  color: var(--color-text-main);
   margin-bottom: 0.5rem;
 }
 
 .header p {
-  color: #718096;
+  color: var(--color-text-muted);
   font-size: 1rem;
 }
 
@@ -84,7 +84,7 @@
 .inputGroup label {
   font-size: 0.9rem;
   font-weight: 500;
-  color: #4A5568;
+  color: var(--color-text-main);
 }
 
 .inputWrapper {
@@ -96,23 +96,23 @@
 .inputIcon {
   position: absolute;
   left: 1.2rem;
-  color: #A0AEC0;
+  color: var(--color-text-muted);
 }
 
 .input {
   width: 100%;
   padding: 1rem 1rem 1rem 3.2rem;
-  border: 1px solid #E2E8F0;
+  border: 1px solid var(--color-border);
   border-radius: 2rem;
   font-size: 1rem;
   outline: none;
   transition: all 0.2s ease;
-  background: white;
+  background: var(--color-surface);
 }
 
 .input:focus {
-  border-color: #4ECDC4;
-  box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.1);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(47, 143, 137, 0.12);
 }
 
 .eyeButton {
@@ -120,7 +120,7 @@
   right: 1.2rem;
   background: none;
   border: none;
-  color: #A0AEC0;
+  color: var(--color-text-muted);
   cursor: pointer;
   padding: 0;
   display: flex;
@@ -128,7 +128,7 @@
 }
 
 .eyeButton:hover {
-  color: #4A5568;
+  color: var(--color-text-main);
 }
 
 .actionsRow {
@@ -142,30 +142,30 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #4A5568;
+  color: var(--color-text-main);
   cursor: pointer;
 }
 
 .rememberRow input[type="checkbox"] {
-  accent-color: #4ECDC4;
+  accent-color: var(--color-primary);
   width: 16px;
   height: 16px;
   cursor: pointer;
 }
 
 .forgotLink {
-  color: #4ECDC4;
+  color: var(--color-primary);
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s ease;
 }
 
 .forgotLink:hover {
-  color: #38B2AC;
+  color: var(--color-primary-dark);
 }
 
 .submitBtn {
-  background: linear-gradient(135deg, #4ECDC4 0%, #FFE66D 100%);
+  background: var(--color-gradient-teal);
   color: white;
   border: none;
   padding: 1rem;
@@ -174,13 +174,13 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(78, 205, 196, 0.2);
+  box-shadow: 0 4px 15px rgba(47, 143, 137, 0.18);
   margin-top: 0.5rem;
 }
 
 .submitBtn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(78, 205, 196, 0.3);
+  box-shadow: 0 6px 20px rgba(47, 143, 137, 0.24);
 }
 
 .submitBtn:disabled {
@@ -193,11 +193,11 @@
   text-align: center;
   margin-top: 2rem;
   font-size: 0.95rem;
-  color: #718096;
+  color: var(--color-text-muted);
 }
 
 .registerPrompt a {
-  color: #4ECDC4;
+  color: var(--color-primary);
   font-weight: 600;
   text-decoration: none;
 }
@@ -209,9 +209,9 @@
 .demoNote {
   margin-top: 3rem;
   padding: 1rem;
-  background: #E6FFFA;
+  background: var(--color-primary-soft);
   border-radius: 0.5rem;
-  color: #319795;
+  color: var(--color-primary-dark);
   font-size: 0.85rem;
   text-align: center;
 }

@@ -1,8 +1,8 @@
 .card {
-  background: var(--color-white);
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 12px;
-  box-shadow: 0 10px 24px rgba(17, 24, 39, 0.08);
+  box-shadow: var(--shadow-soft);
   padding: 24px;
 }
 
@@ -26,7 +26,7 @@
 }
 
 .header strong {
-  color: var(--color-primary-light);
+  color: var(--color-primary);
   font-size: 24px;
   font-weight: 700;
 }
@@ -34,7 +34,7 @@
 .track {
   width: 100%;
   height: 14px;
-  background: #f3f4f6;
+  background: #e5e9ee;
   border-radius: 999px;
   overflow: hidden;
 }
@@ -42,5 +42,5 @@
 .fill {
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, #45c7c3 0%, #ffd43b 100%);
+  background: linear-gradient(90deg, #4ea8a1 0%, #b8a15d 100%);
 }

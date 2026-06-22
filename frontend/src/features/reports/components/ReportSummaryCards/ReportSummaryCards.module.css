@@ -1,0 +1,58 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.card {
+  min-height: 106px;
+  border-radius: 8px;
+  padding: 18px;
+  color: var(--color-white);
+  box-shadow: var(--shadow-soft);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  opacity: 0.9;
+  margin-bottom: 10px;
+}
+
+.card strong {
+  display: block;
+  font-size: 24px;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.income {
+  background: linear-gradient(135deg, #4ea8a1 0%, #2f8f89 100%);
+}
+
+.expense {
+  background: linear-gradient(135deg, #c77a86 0%, #a74756 100%);
+}
+
+.balance {
+  background: linear-gradient(135deg, #6f88b8 0%, #4f638f 100%);
+}
+
+.saving {
+  background: linear-gradient(135deg, #d6a64e 0%, #b87935 100%);
+}
+
+@media (max-width: 1040px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

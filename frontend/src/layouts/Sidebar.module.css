@@ -20,7 +20,7 @@
 
 .logoIcon {
   color: var(--color-primary);
-  background: #f0fdfa;
+  background: var(--color-primary-soft);
   padding: 8px;
   border-radius: 12px;
 }
@@ -56,17 +56,17 @@
 }
 
 .navItem:hover {
-  background-color: var(--color-bg);
+  background-color: var(--color-surface-muted);
   color: var(--color-text-main);
 }
 
 .active {
-  background-color: var(--color-primary-light);
+  background-color: var(--color-primary);
   color: var(--color-white);
 }
 
 .active:hover {
-  background-color: var(--color-primary);
+  background-color: var(--color-primary-dark);
   color: var(--color-white);
 }
 
@@ -83,7 +83,7 @@
 .avatar {
   width: 40px;
   height: 40px;
-  background-color: #fb923c;
+  background-color: #a77b55;
   color: white;
   border-radius: 50%;
   display: flex;

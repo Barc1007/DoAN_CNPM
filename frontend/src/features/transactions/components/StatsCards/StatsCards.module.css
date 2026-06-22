@@ -6,10 +6,10 @@
 }
 
 .card {
-  background: #ffffff;
+  background: var(--color-surface);
   border-radius: 16px;
   padding: 22px 24px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-soft);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -31,11 +31,11 @@
 }
 
 .labelIconIncome {
-  color: #06b6d4;
+  color: var(--color-primary);
 }
 
 .labelIconExpense {
-  color: #f43f5e;
+  color: var(--color-danger);
 }
 
 .labelIconGradient {
@@ -49,16 +49,16 @@
 }
 
 .income {
-  color: #06b6d4;
+  color: var(--color-primary);
 }
 
 .expense {
-  color: #f43f5e;
+  color: var(--color-danger);
 }
 
 /* Card 3 — gradient xanh nhạt pastel → vàng nhạt (hình 2) */
 .cardGradient {
-  background: linear-gradient(135deg, #86efac 0%, #bef264 55%, #fde68a 100%);
+  background: linear-gradient(135deg, #4ea8a1 0%, #6f8f78 55%, #b8a15d 100%);
   color: #fff;
 }
 

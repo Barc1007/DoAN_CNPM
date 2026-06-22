@@ -20,7 +20,7 @@ const RegisterForm: React.FC = () => {
       <div className={styles.logoRow}>
         <div className={styles.logoIcon}>
           <svg viewBox="0 0 24 24" fill="none" className={styles.logoSvg}>
-             <rect x="3" y="6" width="18" height="12" rx="2" fill="#4ECDC4" />
+             <rect x="3" y="6" width="18" height="12" rx="2" fill="#2f8f89" />
              <path d="M7 12H17M7 15H11" stroke="white" strokeWidth="2" strokeLinecap="round" />
           </svg>
         </div>
