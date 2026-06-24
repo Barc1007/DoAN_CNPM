@@ -83,6 +83,8 @@
 .avatar {
   width: 40px;
   height: 40px;
+  min-width: 40px;
+  min-height: 40px;
   background-color: #fb923c;
   color: white;
   border-radius: 50%;
@@ -90,6 +92,7 @@
   align-items: center;
   justify-content: center;
   font-weight: 600;
+  flex-shrink: 0;
 }
 
 .profileInfo {

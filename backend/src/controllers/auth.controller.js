@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
 const { success, error } = require('../utils/response');
+const { deriveKeyFromPassword, setSession, decrypt } = require('../Utils/crypto');
 
 const SALT_ROUNDS = 10;
 
@@ -26,14 +27,14 @@ const register = async (req, res, next) => {
 
     const [result] = await pool.query(
       'INSERT INTO users (full_name, username, email, password) VALUES (?, ?, ?, ?)',
-      [full_name, username, email, hashedPassword]
+      [encrypt(full_name), username, encrypt(email), hashedPassword]
     );
 
     const newUser = {
       user_id: result.insertId,
       username,
-      email,
-      full_name,
+      email: email,
+      full_name: full_name,
     };
 
     return success(res, newUser, 'Đăng ký thành công', 201);
@@ -69,14 +70,22 @@ const login = async (req, res, next) => {
     const token = jwt.sign(
       { user_id: user.user_id, username: user.username },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN }
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     );
+
+    // Derive encryption key from password (full 32 bytes) and store session
+    const { encryptionKey } = deriveKeyFromPassword(password);
+    setSession(user.user_id, { key: encryptionKey, password });
+
+    // Decrypt user fields (support both old CryptoJS and new AES format)
+    const fullName = decrypt(user.full_name, user.user_id);
+    const email = decrypt(user.email, user.user_id);
 
     const userData = {
       user_id: user.user_id,
       username: user.username,
-      email: user.email,
-      full_name: user.full_name,
+      email: email,
+      full_name: fullName,
     };
 
     return success(res, { ...userData, token }, 'Đăng nhập thành công');
@@ -117,6 +126,10 @@ const changePassword = async (req, res, next) => {
       'UPDATE users SET password = ? WHERE user_id = ?',
       [hashedPassword, userId]
     );
+
+    // Update session with new password
+    const { encryptionKey } = deriveKeyFromPassword(new_password);
+    setSession(userId, { key: encryptionKey, password: new_password });
 
     return success(res, null, 'Đổi mật khẩu thành công');
   } catch (err) {

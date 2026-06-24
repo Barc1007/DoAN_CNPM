@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { Notification, NotificationFilterType } from '../types/notification';
 import { notificationService } from '../services/notificationService';
@@ -16,7 +17,7 @@ export const useNotifications = () => {
     try {
       const data = await notificationService.getNotifications();
       setNotifications(data);
-    } catch (err) {
+    } catch {
       setError('Lỗi khi tải thông báo. Vui lòng thử lại sau.');
     } finally {
       setIsLoading(false);
@@ -41,7 +42,7 @@ export const useNotifications = () => {
 
     try {
       await notificationService.markAsRead(id);
-    } catch (err) {
+    } catch {
       setNotifications(prev); // rollback
       setError('Không thể đánh dấu đã đọc.');
     }
@@ -57,7 +58,7 @@ export const useNotifications = () => {
 
     try {
       await notificationService.markAllAsRead();
-    } catch (err) {
+    } catch {
       setNotifications(prev); // rollback
       setError('Không thể đánh dấu tất cả.');
     }
@@ -73,7 +74,7 @@ export const useNotifications = () => {
 
     try {
       await notificationService.deleteNotification(id);
-    } catch (err) {
+    } catch {
       setNotifications(prev); // rollback
       setError('Xóa thông báo thất bại.');
     }

@@ -2,7 +2,7 @@ import apiClient from "../../../services/apiClient";
 import type { Notification } from "../types/notification";
 import { mockNotifications } from "../../../data/mockNotifications";
 
-const IS_MOCK = true;
+const IS_MOCK = false;
 let currentNotifications = [...mockNotifications];
 
 export const notificationService = {
@@ -18,7 +18,7 @@ export const notificationService = {
       return data;
     }
 
-    const response = await apiClient.get<any, Notification[]>("/notifications", {
+    const response = await apiClient.get<unknown, Notification[]>("/notifications", {
       params: { user_id: userId },
     });
     return response;
@@ -34,7 +34,7 @@ export const notificationService = {
       }
       throw new Error("Notification not found");
     }
-    const response = await apiClient.patch<any, Notification>(`/notifications/${notificationId}/read`);
+    const response = await apiClient.patch<unknown, Notification>(`/notifications/${notificationId}/read`);
     return response;
   },
   
@@ -49,7 +49,7 @@ export const notificationService = {
       });
       return true;
     }
-    const response = await apiClient.patch<any, boolean>("/notifications/read-all", { user_id: userId });
+    const response = await apiClient.patch<unknown, boolean>("/notifications/read-all", { user_id: userId });
     return response;
   },
   deleteNotification: async (notificationId: number): Promise<boolean> => {

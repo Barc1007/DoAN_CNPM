@@ -1,8 +1,7 @@
 import apiClient from "../../../services/apiClient";
 import type { CategoryData } from "../../../types/category";
-import { MOCK_EXPENSE_DATA, MOCK_INCOME_DATA } from "../../../data/mockCategory";
 
-const IS_MOCK = true;
+const IS_MOCK = false;
 
 const cloneCategoryData = (data: CategoryData): CategoryData => ({
   summary: {
@@ -18,7 +17,7 @@ export const categoryService = {
    */
   getCategoryData: async (type: "expense" | "income"): Promise<CategoryData> => {
     if (IS_MOCK) {
-      // Giả lập delay mạng
+      const { MOCK_EXPENSE_DATA, MOCK_INCOME_DATA } = await import("../../../data/mockCategory");
       await new Promise((resolve) => setTimeout(resolve, 600));
       return cloneCategoryData(type === "expense" ? MOCK_EXPENSE_DATA : MOCK_INCOME_DATA);
     }
@@ -26,6 +25,14 @@ export const categoryService = {
     const response = await apiClient.get<unknown, CategoryData>("/categories", {
       params: { type },
     });
+
     return response;
+  },
+
+  /**
+   * Cập nhật tên danh mục
+   */
+  updateCategoryName: async (categoryId: number, name: string): Promise<unknown> => {
+    return apiClient.put<unknown, unknown>(`/categories/${categoryId}`, { name });
   },
 };

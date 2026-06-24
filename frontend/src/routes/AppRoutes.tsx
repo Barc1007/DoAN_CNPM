@@ -10,6 +10,7 @@ import WalletPage from '../features/wallet/pages/WalletPage';
 import NotificationsPage from '../features/notifications/page/NotificationsPage';
 import SettingsPage from '../features/settings/pages/SettingsPage';
 import GoalsPage from '../features/goals/pages/GoalsPage';
+import ReportsPage from '../features/reports/pages/ReportsPage';
 
 const AppRoutes: React.FC = () => {
   return (
@@ -24,6 +25,7 @@ const AppRoutes: React.FC = () => {
       <Route path="/wallet" element={<WalletPage />} />
       <Route path="/goals" element={<GoalsPage />} />
       <Route path="/notifications" element={<NotificationsPage />} />
+      <Route path="/reports" element={<ReportsPage />} />
       <Route path="/settings" element={<SettingsPage />} />
     </Routes>
   );

@@ -1,5 +1,6 @@
 const pool = require('../config/db');
 const { success, error } = require('../utils/response');
+const { decrypt } = require('../Utils/crypto');
 
 const getNotifications = async (req, res, next) => {
   try {
@@ -12,6 +13,8 @@ const getNotifications = async (req, res, next) => {
 
     const result = rows.map((n) => ({
       ...n,
+      title: decrypt(n.title, userId),
+      message: decrypt(n.message, userId),
       is_read: Boolean(n.is_read),
     }));
 

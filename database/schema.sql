@@ -10,7 +10,7 @@ CREATE TABLE users (
   username   VARCHAR(50)     NOT NULL,
   email      VARCHAR(100)    NOT NULL,
   password   VARCHAR(255)    NOT NULL,
-  full_name  VARCHAR(100)    NOT NULL,
+  full_name  TEXT            NOT NULL,
   created_at DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
  
   PRIMARY KEY (user_id),
@@ -37,8 +37,8 @@ CREATE TABLE categories (
 CREATE TABLE wallets (
   wallet_id       INT           NOT NULL AUTO_INCREMENT,
   user_id         INT           NOT NULL,
-  name            VARCHAR(100)  NOT NULL,
-  initial_balance DECIMAL(15,2) NOT NULL DEFAULT 0.00,
+  name            VARCHAR(255)  NOT NULL,
+  initial_balance VARCHAR(255)  NOT NULL,
   wallet_type     VARCHAR(15)   NOT NULL,
   created_at      DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
   is_active       TINYINT(1)    NOT NULL DEFAULT 1,
@@ -46,8 +46,6 @@ CREATE TABLE wallets (
   PRIMARY KEY (wallet_id),
   CONSTRAINT CK_wallet_type
     CHECK (wallet_type IN ('cash', 'bank', 'e-wallet', 'credit', 'other')),
-  CONSTRAINT CK_wallet_initial_balance
-    CHECK (initial_balance >= 0),
  
   CONSTRAINT FK_wallet_user
     FOREIGN KEY (user_id) REFERENCES users(user_id)
@@ -59,12 +57,11 @@ CREATE TABLE transactions (
   user_id          INT           NOT NULL,
   wallet_id        INT           NOT NULL,
   category_id      INT           NOT NULL,
-  amount           DECIMAL(15,2) NOT NULL,
+  amount           VARCHAR(255)  NOT NULL,
   transaction_date DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  note             VARCHAR(500)           DEFAULT NULL,
+  note             TEXT                   DEFAULT NULL,
  
   PRIMARY KEY (transaction_id),
-  CONSTRAINT CK_trans_amount CHECK (amount > 0),
  
   CONSTRAINT FK_trans_user
     FOREIGN KEY (user_id)     REFERENCES users(user_id)       ON DELETE CASCADE,
@@ -82,18 +79,16 @@ CREATE TABLE budgets (
   budget_id    INT           NOT NULL AUTO_INCREMENT,
   user_id      INT           NOT NULL,
   category_id  INT                    DEFAULT NULL,
-  name         VARCHAR(100)  NOT NULL,
-  limit_amount DECIMAL(15,2) NOT NULL,
-  spent_amount DECIMAL(15,2) NOT NULL DEFAULT 0.00,
+  name         VARCHAR(255)  NOT NULL,
+  limit_amount VARCHAR(255)  NOT NULL,
+  spent_amount VARCHAR(255)  NOT NULL,
   start_date   DATE          NOT NULL,
   end_date     DATE          NOT NULL,
   alert        DECIMAL(5,2)  NOT NULL DEFAULT 80.00,
  
   PRIMARY KEY (budget_id),
-  CONSTRAINT CK_budget_limit     CHECK (limit_amount > 0),
   CONSTRAINT CK_budget_dates     CHECK (end_date >= start_date),
   CONSTRAINT CK_budget_threshold CHECK (alert BETWEEN 1 AND 100),
-  CONSTRAINT CK_budget_spent     CHECK (spent_amount >= 0),
  
   CONSTRAINT FK_budget_user
     FOREIGN KEY (user_id)     REFERENCES users(user_id)          ON DELETE CASCADE,
@@ -126,9 +121,9 @@ CREATE TABLE goals (
   goal_id        INT           NOT NULL AUTO_INCREMENT,
   user_id        INT           NOT NULL,
   wallet_id      INT                    DEFAULT NULL,
-  name           VARCHAR(255)  NOT NULL,
-  target_amount  DECIMAL(18,2) NOT NULL,
-  current_amount DECIMAL(18,2) NOT NULL DEFAULT 0.00,
+  name           TEXT          NOT NULL,
+  target_amount  VARCHAR(255)  NOT NULL,
+  current_amount VARCHAR(255)  NOT NULL,
   start_date     DATE                   DEFAULT NULL,
   end_date       DATE                   DEFAULT NULL,
   status         VARCHAR(20)   NOT NULL DEFAULT 'active',
@@ -137,12 +132,6 @@ CREATE TABLE goals (
   PRIMARY KEY (goal_id),
   CONSTRAINT CK_goal_status
     CHECK (status IN ('active', 'completed', 'cancelled', 'paused')),
-  CONSTRAINT CK_goal_target
-    CHECK (target_amount > 0),
-  CONSTRAINT CK_goal_current
-    CHECK (current_amount >= 0),
-  CONSTRAINT CK_goal_not_exceed
-    CHECK (current_amount <= target_amount),
   CONSTRAINT CK_goal_dates
     CHECK (end_date IS NULL OR start_date IS NULL OR end_date >= start_date),
  
@@ -159,12 +148,11 @@ CREATE TABLE goal_contributions (
   contribution_id INT           NOT NULL AUTO_INCREMENT,
   goal_id         INT           NOT NULL,
   wallet_id       INT           NOT NULL,
-  amount          DECIMAL(18,2) NOT NULL,
-  note            VARCHAR(255)           DEFAULT NULL,
+  amount          VARCHAR(255)  NOT NULL,
+  note            TEXT                   DEFAULT NULL,
   contributed_at  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
  
   PRIMARY KEY (contribution_id),
-  CONSTRAINT CK_contrib_amount CHECK (amount > 0),
  
   CONSTRAINT FK_contrib_goal
     FOREIGN KEY (goal_id)   REFERENCES goals(goal_id)     ON DELETE CASCADE,
@@ -183,16 +171,8 @@ SELECT
   w.wallet_type,
   w.is_active,
   w.initial_balance,
-  w.initial_balance
-    + COALESCE(SUM(CASE WHEN c.type = 'income'  THEN t.amount ELSE 0 END), 0)
-    - COALESCE(SUM(CASE WHEN c.type = 'expense' THEN t.amount ELSE 0 END), 0)
-  AS current_balance
-FROM wallets w
-LEFT JOIN transactions t  ON w.wallet_id   = t.wallet_id
-LEFT JOIN categories   c  ON t.category_id = c.category_id
-GROUP BY
-  w.wallet_id, w.user_id, w.name,
-  w.wallet_type, w.is_active, w.initial_balance;
+  w.initial_balance AS current_balance
+FROM wallets w;
  
 CREATE OR REPLACE VIEW v_transactions AS
 SELECT

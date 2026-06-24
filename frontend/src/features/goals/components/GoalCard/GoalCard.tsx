@@ -9,6 +9,9 @@ type GoalTone = "teal" | "coral" | "yellow" | "violet";
 interface GoalCardProps {
   goal: SavingGoal;
   index?: number;
+  onEdit?: (goal: SavingGoal) => void;
+  onDelete?: (goal: SavingGoal) => void;
+  onContribute?: (goalId: number, amount: number) => void;
 }
 
 const visualOptions = [
@@ -38,12 +41,13 @@ const getDaysLeft = (deadline: string) => {
   return Math.ceil((endDate.getTime() - today.getTime()) / 86400000);
 };
 
-const GoalCard: React.FC<GoalCardProps> = ({ goal, index = 0 }) => {
-  const progress = Math.min(
-    Math.round((goal.current_amount / goal.target_amount) * 100),
-    100
-  );
-  const remaining = Math.max(goal.target_amount - goal.current_amount, 0);
+const GoalCard: React.FC<GoalCardProps> = ({ goal, index = 0, onEdit, onDelete, onContribute }) => {
+  const safeTarget = typeof goal.target_amount === 'number' && isFinite(goal.target_amount) ? goal.target_amount : 0;
+  const safeCurrent = typeof goal.current_amount === 'number' && isFinite(goal.current_amount) ? goal.current_amount : 0;
+  const progress = safeTarget > 0
+    ? Math.round((safeCurrent / safeTarget) * 100)
+    : 0;
+  const remaining = Math.max(safeTarget - safeCurrent, 0);
   const daysLeft = getDaysLeft(goal.end_date);
   const dailyAmount = daysLeft > 0 ? Math.ceil(remaining / daysLeft) : remaining;
   const visual = visualOptions[index % visualOptions.length];
@@ -73,6 +77,24 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, index = 0 }) => {
       <div className={styles.amounts}>
         <strong>{formatMoney(goal.current_amount)}</strong>
         <span>{formatMoney(goal.target_amount)}</span>
+      </div>
+
+      <div className={styles.actions}>
+        {onEdit && (
+          <button className={styles.actionBtn} onClick={() => onEdit(goal)}>
+            Sửa
+          </button>
+        )}
+        {onDelete && (
+          <button className={styles.actionBtnDelete} onClick={() => onDelete(goal)}>
+            Xoá
+          </button>
+        )}
+        {onContribute && (
+          <button className={styles.actionBtn} onClick={() => onContribute(goal.goal_id, goal.target_amount)}>
+            Góp tiền
+          </button>
+        )}
       </div>
 
       <footer className={styles.footer}>

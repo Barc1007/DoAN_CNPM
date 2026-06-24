@@ -42,7 +42,7 @@ export const useTransactions = (initialSearchQuery = "") => {
   const filteredTransactions = useMemo<Transaction[]>(() => {
     return allTransactions.filter((t) => {
       const matchesType =
-        filterType === "ALL" || t.type === filterType;
+        filterType === "ALL" || t.type.toUpperCase() === filterType;
       const query = searchQuery.toLowerCase();
       const matchesSearch =
         query === "" ||

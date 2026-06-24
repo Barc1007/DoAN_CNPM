@@ -1,12 +1,12 @@
 // Khớp chính xác với schema bảng transactions trong DB
-export type TransactionType = "INCOME" | "EXPENSE";
+export type TransactionType = string;
 
 export interface Transaction {
   transaction_id: number;
   user_id: number;
   wallet_id: number;
   category_id: number;
-  type: TransactionType;
+  type: string;
   amount: number;
   transaction_date: string; // ISO date string "YYYY-MM-DD"
   note: string;

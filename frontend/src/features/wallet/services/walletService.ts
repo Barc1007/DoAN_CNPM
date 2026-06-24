@@ -1,34 +1,30 @@
 import apiClient from "../../../services/apiClient";
 import type { Wallet } from "../types/wallet";
-import { MOCK_WALLETS } from "../../../data/mockWallets";
 
-const IS_MOCK = true;
+const IS_MOCK = false;
 
 export const walletService = {
-  /**
-   * Lấy danh sách ví của user
-   */
   getWallets: async (userId?: number): Promise<Wallet[]> => {
     if (IS_MOCK) {
+      const { MOCK_WALLETS } = await import("../../../data/mockWallets");
       await new Promise((resolve) => setTimeout(resolve, 500));
       return userId
         ? MOCK_WALLETS.filter((w) => w.user_id === userId)
         : MOCK_WALLETS;
     }
 
-    const response = await apiClient.get<any, Wallet[]>("/wallets", {
+    const response = await apiClient.get<unknown, Wallet[]>("/wallets", {
       params: { user_id: userId },
     });
+
     return response;
   },
 
-  /**
-   * Tạo ví mới
-   */
   createWallet: async (
     payload: Omit<Wallet, "wallet_id" | "created_at">
   ): Promise<Wallet> => {
     if (IS_MOCK) {
+      const { MOCK_WALLETS } = await import("../../../data/mockWallets");
       await new Promise((resolve) => setTimeout(resolve, 700));
       const newWallet: Wallet = {
         ...payload,
@@ -39,18 +35,17 @@ export const walletService = {
       return newWallet;
     }
 
-    const response = await apiClient.post<any, Wallet>("/wallets", payload);
+    const response = await apiClient.post<unknown, Wallet>("/wallets", payload);
+
     return response;
   },
 
-  /**
-   * Cập nhật ví
-   */
   updateWallet: async (
     walletId: number,
     payload: Partial<Omit<Wallet, "wallet_id" | "user_id" | "created_at">>
   ): Promise<Wallet> => {
     if (IS_MOCK) {
+      const { MOCK_WALLETS } = await import("../../../data/mockWallets");
       await new Promise((resolve) => setTimeout(resolve, 700));
       const idx = MOCK_WALLETS.findIndex((w) => w.wallet_id === walletId);
       if (idx === -1) throw new Error("Không tìm thấy ví");
@@ -58,18 +53,17 @@ export const walletService = {
       return MOCK_WALLETS[idx];
     }
 
-    const response = await apiClient.put<any, Wallet>(
+    const response = await apiClient.put<unknown, Wallet>(
       `/wallets/${walletId}`,
       payload
     );
+
     return response;
   },
 
-  /**
-   * Xoá ví
-   */
   deleteWallet: async (walletId: number): Promise<void> => {
     if (IS_MOCK) {
+      const { MOCK_WALLETS } = await import("../../../data/mockWallets");
       await new Promise((resolve) => setTimeout(resolve, 500));
       const idx = MOCK_WALLETS.findIndex((w) => w.wallet_id === walletId);
       if (idx === -1) throw new Error("Không tìm thấy ví");

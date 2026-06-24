@@ -1,30 +1,15 @@
 const pool = require('../config/db');
 const { success, error } = require('../utils/response');
+const { encrypt, decrypt } = require('../Utils/crypto');
 
 const getBudgets = async (req, res, next) => {
   try {
     const userId = req.query.user_id || req.user.user_id;
 
     const [rows] = await pool.query(
-      `SELECT
-         b.budget_id,
-         b.user_id,
-         b.category_id,
-         b.name,
-         b.limit_amount,
-         b.start_date,
-         b.end_date,
-         b.alert,
-         c.name AS category_name,
-         COALESCE((
-           SELECT SUM(t.amount)
-           FROM transactions t
-           JOIN categories cat ON t.category_id = cat.category_id
-           WHERE t.user_id = b.user_id
-             AND cat.type = 'expense'
-             AND (b.category_id IS NULL OR t.category_id = b.category_id)
-             AND DATE(t.transaction_date) BETWEEN b.start_date AND b.end_date
-         ), 0) AS spent_amount
+      `SELECT b.budget_id, b.user_id, b.category_id, b.name,
+              b.limit_amount, b.start_date, b.end_date, b.alert,
+              c.name AS category_name
        FROM budgets b
        LEFT JOIN categories c ON b.category_id = c.category_id
        WHERE b.user_id = ?
@@ -32,14 +17,28 @@ const getBudgets = async (req, res, next) => {
       [userId]
     );
 
-    const result = rows.map((b) => ({
-      ...b,
-      limit_amount: Number(b.limit_amount),
-      spent_amount: Number(b.spent_amount),
-      alert: Number(b.alert),
-      usage_percent: b.limit_amount > 0
-        ? Math.round((Number(b.spent_amount) / Number(b.limit_amount)) * 100)
-        : 0,
+    const result = await Promise.all(rows.map(async (b) => {
+      const limitAmount = Number(decrypt(b.limit_amount, userId)) || 0;
+
+      let spentAmount = 0;
+      if (b.category_id) {
+        const [transactions] = await pool.query(
+          `SELECT amount FROM transactions
+           WHERE user_id = ? AND category_id = ?
+           AND transaction_date >= ? AND transaction_date <= ?`,
+          [userId, b.category_id, b.start_date, b.end_date + ' 23:59:59']
+        );
+        spentAmount = transactions.reduce((sum, t) => sum + (Number(decrypt(t.amount, userId)) || 0), 0);
+      }
+
+      return {
+        ...b,
+        name: decrypt(b.name, userId),
+        limit_amount: limitAmount,
+        spent_amount: spentAmount,
+        alert: Number(b.alert),
+        usage_percent: limitAmount > 0 ? Math.round((spentAmount / limitAmount) * 100 * 100) / 100 : 0,
+      };
     }));
 
     return success(res, result);
@@ -58,9 +57,9 @@ const createBudget = async (req, res, next) => {
     }
 
     const [result] = await pool.query(
-      `INSERT INTO budgets (user_id, category_id, name, limit_amount, start_date, end_date, alert)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [userId, category_id || null, name, limit_amount, start_date, end_date, alert ?? 80]
+      `INSERT INTO budgets (user_id, category_id, name, limit_amount, start_date, end_date, alert, spent_amount)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [userId, category_id || null, encrypt(name, userId), encrypt(String(limit_amount), userId), start_date, end_date, alert ?? 80, 0]
     );
 
     const [rows] = await pool.query(
@@ -68,7 +67,67 @@ const createBudget = async (req, res, next) => {
       [result.insertId]
     );
 
-    return success(res, rows[0], 'Tạo ngân sách thành công', 201);
+    const b = rows[0];
+    const response = {
+      ...b,
+      name: decrypt(b.name, userId),
+      limit_amount: Number(decrypt(b.limit_amount, userId)) || 0,
+      spent_amount: 0,
+      usage_percent: 0,
+    };
+
+    return success(res, response, 'Tạo ngân sách thành công', 201);
+  } catch (err) {
+    next(err);
+  }
+};
+
+const updateBudget = async (req, res, next) => {
+  try {
+    const { budgetId } = req.params;
+    const { limit_amount, name, category_id, start_date, end_date, alert } = req.body;
+    const userId = req.user.user_id;
+
+    const fields = [];
+    const values = [];
+
+    if (limit_amount !== undefined) { fields.push('limit_amount = ?'); values.push(encrypt(String(limit_amount), userId)); }
+    if (name !== undefined) { fields.push('name = ?'); values.push(encrypt(name, userId)); }
+    if (category_id !== undefined) { fields.push('category_id = ?'); values.push(category_id || null); }
+    if (start_date !== undefined) { fields.push('start_date = ?'); values.push(start_date); }
+    if (end_date !== undefined) { fields.push('end_date = ?'); values.push(end_date); }
+    if (alert !== undefined) { fields.push('alert = ?'); values.push(alert); }
+
+    if (fields.length === 0) {
+      return error(res, 'Không có dữ liệu để cập nhật', 400);
+    }
+
+    values.push(budgetId);
+    values.push(userId);
+
+    const [result] = await pool.query(
+      `UPDATE budgets SET ${fields.join(', ')} WHERE budget_id = ? AND user_id = ?`,
+      values
+    );
+
+    if (result.affectedRows === 0) {
+      return error(res, 'Không tìm thấy ngân sách', 404);
+    }
+
+    const [rows] = await pool.query(
+      'SELECT * FROM budgets WHERE budget_id = ?',
+      [budgetId]
+    );
+
+    const b = rows[0];
+    const response = {
+      ...b,
+      name: decrypt(b.name, userId),
+      limit_amount: Number(decrypt(b.limit_amount, userId)) || 0,
+      spent_amount: Number(decrypt(b.spent_amount, userId)) || 0,
+    };
+
+    return success(res, response, 'Cập nhật ngân sách thành công');
   } catch (err) {
     next(err);
   }
@@ -93,4 +152,4 @@ const deleteBudget = async (req, res, next) => {
   }
 };
 
-module.exports = { getBudgets, createBudget, deleteBudget };
+module.exports = { getBudgets, createBudget, updateBudget, deleteBudget };

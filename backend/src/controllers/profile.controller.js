@@ -1,5 +1,6 @@
 const pool = require('../config/db');
 const { success, error } = require('../utils/response');
+const { decrypt, encrypt } = require('../Utils/crypto');
 
 const getProfile = async (req, res, next) => {
   try {
@@ -16,6 +17,10 @@ const getProfile = async (req, res, next) => {
 
     const user = rows[0];
 
+    // Decrypt user fields (support both old CryptoJS and new AES format)
+    const fullName = decrypt(user.full_name, user.user_id);
+    const email = decrypt(user.email, user.user_id);
+
     const [transCount] = await pool.query(
       'SELECT COUNT(*) AS cnt FROM transactions WHERE user_id = ?',
       [userId]
@@ -31,6 +36,8 @@ const getProfile = async (req, res, next) => {
 
     const profile = {
       ...user,
+      full_name: fullName,
+      email: email,
       join_date: user.created_at,
       stats: {
         transactions: transCount[0].cnt,
@@ -53,8 +60,8 @@ const updateProfile = async (req, res, next) => {
     const fields = [];
     const values = [];
 
-    if (full_name !== undefined) { fields.push('full_name = ?'); values.push(full_name); }
-    if (email !== undefined) { fields.push('email = ?'); values.push(email); }
+    if (full_name !== undefined) { fields.push('full_name = ?'); values.push(encrypt(full_name)); }
+    if (email !== undefined) { fields.push('email = ?'); values.push(encrypt(email)); }
 
     if (fields.length === 0) {
       return error(res, 'Không có dữ liệu để cập nhật', 400);
@@ -71,7 +78,14 @@ const updateProfile = async (req, res, next) => {
       [userId]
     );
 
-    return success(res, rows[0], 'Cập nhật hồ sơ thành công');
+    const updatedUser = rows[0];
+    const response = {
+      ...updatedUser,
+      full_name: decrypt(updatedUser.full_name, updatedUser.user_id),
+      email: decrypt(updatedUser.email, updatedUser.user_id),
+    };
+
+    return success(res, response, 'Cập nhật hồ sơ thành công');
   } catch (err) {
     next(err);
   }

@@ -42,8 +42,8 @@ export const useRegisterForm = () => {
       // Mock notification (Sẽ thay bằng component Toast sau này thư viện UI)
       alert("Tạo tài khoản thành công! Vui lòng đăng nhập.");
       navigate("/login");
-    } catch (err: any) {
-      setError(err.message || "Đã có lỗi xảy ra khi tạo tài khoản");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Đã có lỗi xảy ra khi tạo tài khoản");
     } finally {
       setLoading(false);
     }

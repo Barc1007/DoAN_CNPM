@@ -1,15 +1,12 @@
 import apiClient from "../../../services/apiClient";
 import type { Transaction, TransactionStats } from "../types/transaction";
-import { MOCK_TRANSACTIONS } from "../../../data/mockTransactions";
 
-const IS_MOCK = true;
+const IS_MOCK = false;
 
 export const transactionService = {
-  /**
-   * Lấy danh sách toàn bộ giao dịch của user
-   */
   getTransactions: async (userId?: number): Promise<Transaction[]> => {
     if (IS_MOCK) {
+      const { MOCK_TRANSACTIONS } = await import("../../../data/mockTransactions");
       await new Promise((resolve) => setTimeout(resolve, 600));
 
       const data = userId
@@ -19,19 +16,18 @@ export const transactionService = {
       return data;
     }
 
-    const response = await apiClient.get<any, Transaction[]>("/transactions", {
+    const response = await apiClient.get<unknown, Transaction[]>("/transactions", {
       params: { user_id: userId },
     });
+
     return response;
   },
 
-  /**
-   * Tạo giao dịch mới
-   */
   createTransaction: async (
     payload: Omit<Transaction, "transaction_id">
   ): Promise<Transaction> => {
     if (IS_MOCK) {
+      const { MOCK_TRANSACTIONS } = await import("../../../data/mockTransactions");
       await new Promise((resolve) => setTimeout(resolve, 800));
 
       const newTransaction: Transaction = {
@@ -39,28 +35,25 @@ export const transactionService = {
         transaction_id: Date.now(),
       };
 
+      MOCK_TRANSACTIONS.push(newTransaction);
       return newTransaction;
     }
 
-    const response = await apiClient.post<any, Transaction>("/transactions", payload);
+    const response = await apiClient.post<unknown, Transaction>("/transactions", payload);
+
     return response;
   },
 
-  /**
-   * Tính toán thống kê từ danh sách giao dịch (Business Logic)
-   */
   calculateSummaryStats: (transactions: Transaction[]): TransactionStats => {
     const now = new Date();
     const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth() + 1; // 1-indexed
+    const currentMonth = now.getMonth() + 1;
 
     return transactions.reduce(
       (acc, t) => {
-        // Cộng tổng thu/chi
-        if (t.type === "INCOME") acc.totalIncome += Number(t.amount);
+        if (String(t.type).toUpperCase() === "INCOME") acc.totalIncome += Number(t.amount);
         else acc.totalExpense += Number(t.amount);
 
-        // Đếm số giao dịch trong tháng hiện tại
         const [year, month] = t.transaction_date.split("-").map(Number);
         if (year === currentYear && month === currentMonth) {
           acc.currentMonthCount++;

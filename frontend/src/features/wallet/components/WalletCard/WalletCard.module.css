@@ -89,3 +89,38 @@
   border-radius: 20px;
   backdrop-filter: blur(4px);
 }
+
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.editBtn,
+.deleteBtn {
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.editBtn {
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+}
+
+.editBtn:hover {
+  background: white;
+}
+
+.deleteBtn {
+  background: rgba(255, 255, 255, 0.25);
+  color: white;
+}
+
+.deleteBtn:hover {
+  background: rgba(255, 255, 255, 0.35);
+}

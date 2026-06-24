@@ -4,6 +4,7 @@ export interface User {
   email: string;
   password?: string;
   full_name: string;
+  token?: string;
 }
 
 export interface LoginRequest {

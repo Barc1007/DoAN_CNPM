@@ -25,6 +25,7 @@ export interface Transaction {
   user_id: number;
   wallet_id: number;
   category_id: number;
+  category_name?: string;
   type: string;
   amount: number;
   transaction_date: string;

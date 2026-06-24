@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from "react";
 import type { DashboardSummary } from "../../../types/dashboard";
 import { dashboardService } from "../services/dashboardService";
@@ -13,8 +14,8 @@ export const useDashboardData = () => {
       setError(null);
       const result = await dashboardService.getDashboardSummary();
       setData(result);
-    } catch (err: any) {
-      setError(err.message || "Failed to load dashboard data");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to load dashboard data");
     } finally {
       setIsLoading(false);
     }

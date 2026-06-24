@@ -29,8 +29,8 @@ export const useLoginForm = () => {
     try {
       await login({ username, password }, rememberMe);
       navigate("/dashboard");
-    } catch (err: any) {
-      setError(err.message || "Đã có lỗi xảy ra");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Đã có lỗi xảy ra");
     } finally {
       setLoading(false);
     }

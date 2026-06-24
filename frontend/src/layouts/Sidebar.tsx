@@ -29,7 +29,7 @@ const navItems: NavItem[] = [
   { icon: ArrowRightLeft, label: "Giao dịch", path: "/transactions" },
   { icon: LayoutGrid, label: "Danh mục", path: "/categories" },
   { icon: Target, label: "Mục tiêu", path: "/goals" },
-  { icon: PieChart, label: "Báo cáo" },
+  { icon: PieChart, label: "Báo cáo", path: "/reports" },
   { icon: Bell, label: "Thông báo", path: "/notifications" },
   { icon: User, label: "Hồ sơ cá nhân", path: "/profile" },
   { icon: Settings, label: "Cài đặt", path: "/settings" },

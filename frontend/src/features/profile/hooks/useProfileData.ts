@@ -58,7 +58,7 @@ export const useProfileData = () => {
     }
   };
 
-  const handleInputChange = (field: keyof UserProfile, value: any) => {
+  const handleInputChange = (field: keyof UserProfile, value: unknown) => {
     if (editedData) {
       setEditedData({ ...editedData, [field]: value });
     }

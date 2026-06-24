@@ -3,23 +3,23 @@
 :root {
   --font-primary: 'Inter', system-ui, -apple-system, sans-serif;
   
-  /* Brand Colors */
-  --color-primary: #14B8A6;
-  --color-primary-light: #2DD4BF;
-  --color-primary-dark: #0D9488;
-  --color-gradient-teal: linear-gradient(135deg, #2DD4BF 0%, #14B8A6 100%);
+  /* Brand Colors - Toned down for less eye strain */
+  --color-primary: #0D9488;
+  --color-primary-light: #5EEAD4;
+  --color-primary-dark: #115E59;
+  --color-gradient-teal: linear-gradient(135deg, #5EEAD4 0%, #14B8A6 100%);
   
   /* UI Colors */
-  --color-bg: #F9FAFB;
+  --color-bg: #F8FAFC;
   --color-white: #FFFFFF;
-  --color-text-main: #111827;
-  --color-text-muted: #6B7280;
-  --color-border: #E5E7EB;
+  --color-text-main: #1E293B;
+  --color-text-muted: #64748B;
+  --color-border: #E2E8F0;
   
-  /* Status Colors */
-  --color-success: #10B981;
-  --color-danger: #EF4444;
-  --color-warning: #F59E0B;
+  /* Status Colors - Subtler */
+  --color-success: #059669;
+  --color-danger: #DC2626;
+  --color-warning: #D97706;
 }
 
 * {
@@ -50,4 +50,23 @@ a {
 
 ul {
   list-style: none;
+}
+
+/* Scrollbar styling for webkit */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
 }

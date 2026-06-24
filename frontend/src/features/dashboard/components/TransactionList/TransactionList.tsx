@@ -1,17 +1,22 @@
 import React from "react";
-import { Utensils, GraduationCap, Coffee } from "lucide-react";
+import { Utensils, GraduationCap, Coffee, type LucideIcon } from "lucide-react";
 import styles from "./TransactionList.module.css";
 import { formatMoney } from "../../../../utils/formatMoney";
 import { formatShortDate } from "../../../../utils/formatDate";
 import type { Transaction } from "../../../../types/dashboard";
 import clsx from "clsx";
 
+interface IconConfig {
+  icon: LucideIcon;
+  color: string;
+}
+
 interface TransactionListProps {
   transactions: Transaction[];
 }
 
-const CATEGORY_ICONS: Record<number, any> = {
-  5: { icon: Utensils, color: "#4ECDC4" }, // Fallback for 5
+const CATEGORY_ICONS: Record<number, IconConfig> = {
+  5: { icon: Utensils, color: "#4ECDC4" },
   6: { icon: Coffee, color: "#FF6B6B" },
   10: { icon: GraduationCap, color: "#4ECDC4" },
 };

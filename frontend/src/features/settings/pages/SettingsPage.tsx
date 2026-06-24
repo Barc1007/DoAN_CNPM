@@ -1,101 +1,79 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import MainLayout from '../../../layouts/MainLayout';
 import { 
   Settings as SettingsIcon, 
-  Moon, 
-  Bell, 
-  BellRing, 
-  Cloud, 
-  User, 
-  Monitor, 
-  Languages, 
-  Download, 
-  HelpCircle,
-  ShieldCheck
+  Moon, Bell, BellRing, Cloud, User, Monitor, HelpCircle,
+  ArrowRight, Eye, EyeOff, Lock, Check, X
 } from 'lucide-react';
 import styles from './SettingsPage.module.css';
-import SettingSection from '../components/SettingSection';
-import type { SettingSectionType } from '../types/settings';
 import { useAuth } from '../../auth/context/AuthContext';
+import apiClient from '../../../services/apiClient';
 
 const SettingsPage: React.FC = () => {
-  const { user } = useAuth();
-  
-  // State for toggles (mock)
-  const [quickSettings, setQuickSettings] = useState({
-    darkMode: false,
-    txNotifications: true,
-    budgetReminders: true,
-    autoBackup: false
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const [darkMode, setDarkMode] = useState<boolean>(() => {
+    try { return localStorage.getItem('darkMode') === 'true'; } catch { return false; }
+  });
+  const [txNotifications, setTxNotifications] = useState<boolean>(() => {
+    try { return localStorage.getItem('txNotifications') !== 'false'; } catch { return true; }
+  });
+  const [budgetReminders, setBudgetReminders] = useState<boolean>(() => {
+    try { return localStorage.getItem('budgetReminders') !== 'false'; } catch { return true; }
+  });
+  const [autoBackup, setAutoBackup] = useState<boolean>(() => {
+    try { return localStorage.getItem('autoBackup') === 'true'; } catch { return false; }
   });
 
-  const handleToggle = (id: string, value: boolean) => {
-    setQuickSettings(prev => ({
-      ...prev,
-      [id]: value
-    }));
-  };
+  // Password change modal
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPw, setShowPw] = useState(false);
+  const [pwMsg, setPwMsg] = useState<{ok: boolean; text: string} | null>(null);
+  const [pwLoading, setPwLoading] = useState(false);
 
   const displayName = user?.full_name || user?.username || "Sinh Viên A";
   const displayEmail = user?.email || "sinhvien@edu.vn";
   const initials = displayName.split(" ").map(w => w[0]).join("").substring(0, 2).toUpperCase() || "SV";
 
-  const sections: SettingSectionType[] = [
-    {
-      id: 'account',
-      title: 'Tài khoản',
-      icon: User,
-      items: [
-        { id: 'profile-info', icon: User, label: 'Thông tin cá nhân', description: 'Cập nhật tên, email và ảnh đại diện', type: 'link' },
-        { id: 'security', icon: ShieldCheck, label: 'Mật khẩu & Bảo mật', description: 'Thay đổi mật khẩu và cài đặt bảo mật', type: 'link' },
-      ]
-    },
-    {
-      id: 'interface',
-      title: 'Giao diện',
-      icon: Monitor,
-      items: [
-        { id: 'display-mode', icon: Moon, label: 'Chế độ hiển thị', description: 'Sáng, tối hoặc tự động', type: 'link' },
-        { id: 'language', icon: Languages, label: 'Ngôn ngữ', value: 'Tiếng Việt', type: 'select' },
-      ]
-    },
-    {
-      id: 'notifications',
-      title: 'Thông báo',
-      icon: Bell,
-      items: [
-        { id: 'tx-notif-detail', icon: Bell, label: 'Thông báo giao dịch', description: 'Nhận thông báo khi có giao dịch mới', type: 'link' },
-        { id: 'budget-notif-detail', icon: BellRing, label: 'Nhắc nhở ngân sách', description: 'Cảnh báo khi sắp vượt ngân sách', type: 'link' },
-      ]
-    },
-    {
-      id: 'data',
-      title: 'Dữ liệu',
-      icon: Download,
-      items: [
-        { id: 'export-data', icon: Download, label: 'Xuất dữ liệu', description: 'Tải về lịch sử giao dịch dưới dạng CSV', type: 'link' },
-        { id: 'backup-data', icon: Cloud, label: 'Sao lưu dữ liệu', description: 'Tự động sao lưu dữ liệu lên cloud', type: 'link' },
-      ]
-    },
-    {
-      id: 'support',
-      title: 'Hỗ trợ',
-      icon: HelpCircle,
-      items: [
-        { id: 'help-center', icon: HelpCircle, label: 'Trợ giúp & Hỗ trợ', description: 'Hướng dẫn sử dụng và liên hệ', type: 'link' },
-      ]
-    }
-  ];
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPwMsg(null);
 
-  const quickSettingsSection: SettingSectionType = {
-    id: 'quick-settings',
-    title: 'Cài đặt nhanh',
-    items: [
-      { id: 'darkMode', icon: Moon, label: 'Chế độ tối', description: 'Giảm độ sáng màn hình', type: 'toggle', value: quickSettings.darkMode },
-      { id: 'txNotifications', icon: Bell, label: 'Thông báo giao dịch', description: 'Nhận thông báo khi có giao dịch', type: 'toggle', value: quickSettings.txNotifications },
-      { id: 'budgetReminders', icon: BellRing, label: 'Nhắc nhở ngân sách', description: 'Cảnh báo khi vượt ngân sách', type: 'toggle', value: quickSettings.budgetReminders },
-      { id: 'autoBackup', icon: Cloud, label: 'Tự động sao lưu', description: 'Sao lưu dữ liệu hàng ngày', type: 'toggle', value: quickSettings.autoBackup },
-    ]
+    if (newPassword.length < 6) {
+      setPwMsg({ ok: false, text: "Mật khẩu mới phải có ít nhất 6 ký tự" });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPwMsg({ ok: false, text: "Xác nhận mật khẩu không khớp" });
+      return;
+    }
+
+    setPwLoading(true);
+    try {
+      await apiClient.post('/auth/change-password', {
+        current_password: currentPassword,
+        new_password: newPassword,
+      });
+      setPwMsg({ ok: true, text: "Đổi mật khẩu thành công!" });
+      setTimeout(() => {
+        setShowPasswordModal(false);
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        setPwMsg(null);
+      }, 1500);
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } };
+      const msg = e?.response?.data?.message || "Đổi mật khẩu thất bại";
+      setPwMsg({ ok: false, text: msg });
+    } finally {
+      setPwLoading(false);
+    }
   };
 
   return (
@@ -108,28 +86,128 @@ const SettingsPage: React.FC = () => {
           </div>
         </header>
 
-        <div className={styles.userCard}>
+        <div className={styles.userCard} onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>
           <div className={styles.avatar}>{initials}</div>
           <div className={styles.userInfo}>
             <h2 className={styles.userName}>{displayName}</h2>
             <p className={styles.userEmail}>{displayEmail}</p>
-            <p className={styles.userJoinDate}>Thành viên từ tháng 1, 2026</p>
           </div>
-          <button className={styles.editBtn}>Chỉnh sửa</button>
+          <ArrowRight size={20} />
         </div>
 
-        <div className={styles.content}>
-          <div className={styles.quickSettingsContainer}>
-             <SettingSection section={quickSettingsSection} onToggle={handleToggle} />
-          </div>
+        {/* Quick Settings */}
+        <div className={styles.sectionCard}>
+          <h3 className={styles.sectionTitle}>Cài đặt nhanh</h3>
+          {[
+            { id: 'dark', label: 'Chế độ tối', icon: Moon, val: darkMode, set: setDarkMode },
+            { id: 'tx', label: 'Thông báo giao dịch', icon: Bell, val: txNotifications, set: setTxNotifications },
+            { id: 'budget', label: 'Nhắc nhở ngân sách', icon: BellRing, val: budgetReminders, set: setBudgetReminders },
+            { id: 'backup', label: 'Tự động sao lưu', icon: Cloud, val: autoBackup, set: setAutoBackup },
+          ].map(item => (
+            <div key={item.id} className={styles.toggleRow}>
+              <div className={styles.toggleLeft}>
+                <item.icon size={18} className={styles.toggleIcon} />
+                <span>{item.label}</span>
+              </div>
+              <label className={styles.switch}>
+                <input 
+                  type="checkbox" 
+                  checked={item.val} 
+                  onChange={e => {
+                    const checked = e.target.checked;
+                    item.set(checked);
+                    try { localStorage.setItem(item.id === 'dark' ? 'darkMode' : item.id, String(checked)); } catch { /* ignore */ }
+                  }} 
+                />
+                <span className={styles.slider}></span>
+              </label>
+            </div>
+          ))}
+        </div>
 
-          <div className={styles.sectionsGrid}>
-            {sections.map(section => (
-              <SettingSection key={section.id} section={section} />
-            ))}
+        {/* Account Section */}
+        <div className={styles.sectionCard}>
+          <h3 className={styles.sectionTitle}>Tài khoản</h3>
+          <div className={styles.linkRow} onClick={() => navigate('/profile')}>
+            <div className={styles.linkLeft}><User size={18} /><span>Thông tin cá nhân</span></div>
+            <ArrowRight size={18} />
+          </div>
+          <div className={styles.linkRow} onClick={() => setShowPasswordModal(true)}>
+            <div className={styles.linkLeft}><Lock size={18} /><span>Mật khẩu & Bảo mật</span></div>
+            <ArrowRight size={18} />
           </div>
         </div>
+
+        {/* App Section */}
+        <div className={styles.sectionCard}>
+          <h3 className={styles.sectionTitle}>Ứng dụng</h3>
+          <div className={styles.linkRow}>
+            <div className={styles.linkLeft}><Monitor size={18} /><span>Ngôn ngữ</span></div>
+            <span className={styles.linkValue}>Tiếng Việt</span>
+          </div>
+          <div className={styles.linkRow}>
+            <div className={styles.linkLeft}><HelpCircle size={18} /><span>Hỗ trợ</span></div>
+            <ArrowRight size={18} />
+          </div>
+        </div>
+
+        {/* Logout */}
+        <button className={styles.logoutBtn} onClick={() => { logout(); navigate('/login'); }}>
+          Đăng xuất
+        </button>
       </div>
+
+      {/* Password Modal */}
+      {showPasswordModal && (
+        <div className={styles.modalOverlay} onClick={() => { setShowPasswordModal(false); setPwMsg(null); }}>
+          <div className={styles.passwordModal} onClick={e => e.stopPropagation()}>
+            <div className={styles.pwHeader}>
+              <h3>Đổi mật khẩu</h3>
+              <button className={styles.pwClose} onClick={() => { setShowPasswordModal(false); setPwMsg(null); }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            {pwMsg && (
+              <div className={`${styles.pwMsg} ${pwMsg.ok ? styles.pwSuccess : styles.pwError}`}>
+                {pwMsg.ok ? <Check size={16} /> : <X size={16} />}
+                {pwMsg.text}
+              </div>
+            )}
+
+            <form className={styles.pwForm} onSubmit={handleChangePassword}>
+              <div className={styles.pwField}>
+                <label>Mật khẩu hiện tại</label>
+                <div className={styles.pwInput}>
+                  <input type={showPw ? "text" : "password"} value={currentPassword}
+                    onChange={e => setCurrentPassword(e.target.value)} placeholder="Nhập mật khẩu hiện tại" required />
+                </div>
+              </div>
+              <div className={styles.pwField}>
+                <label>Mật khẩu mới</label>
+                <div className={styles.pwInput}>
+                  <input type={showPw ? "text" : "password"} value={newPassword}
+                    onChange={e => setNewPassword(e.target.value)} placeholder="Nhập mật khẩu mới" required />
+                </div>
+              </div>
+              <div className={styles.pwField}>
+                <label>Xác nhận mật khẩu mới</label>
+                <div className={styles.pwInput}>
+                  <input type={showPw ? "text" : "password"} value={confirmPassword}
+                    onChange={e => setConfirmPassword(e.target.value)} placeholder="Nhập lại mật khẩu mới" required />
+                </div>
+              </div>
+              <button type="button" className={styles.pwToggle} onClick={() => setShowPw(!showPw)}>
+                {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                {showPw ? "Ẩn" : "Hiện"} mật khẩu
+              </button>
+              <button type="submit" className={styles.pwSubmit} disabled={pwLoading}>
+                {pwLoading ? "Đang xử lý..." : "Đổi mật khẩu"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </MainLayout>
   );
 };

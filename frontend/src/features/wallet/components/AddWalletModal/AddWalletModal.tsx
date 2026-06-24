@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { X } from "lucide-react";
-import type { Wallet } from "../../types/wallet";
+import type { Wallet, WalletType } from "../../types/wallet";
+import { WALLET_TYPE_OPTIONS } from "../../types/wallet";
 import { walletService } from "../../services/walletService";
 import { useAuth } from "../../../auth/context/AuthContext";
 import styles from "./AddWalletModal.module.css";
@@ -10,18 +11,11 @@ interface AddWalletModalProps {
   onAdded: (wallet: Wallet) => void;
 }
 
-const WALLET_TYPES: Wallet["wallet_type"][] = [
-  "Tiền mặt",
-  "Ngân hàng",
-  "Ví điện tử",
-  "Khác",
-];
-
 const AddWalletModal: React.FC<AddWalletModalProps> = ({ onClose, onAdded }) => {
   const { user } = useAuth();
   const [name, setName] = useState("");
   const [balance, setBalance] = useState("");
-  const [walletType, setWalletType] = useState<Wallet["wallet_type"]>("Tiền mặt");
+  const [walletType, setWalletType] = useState<WalletType>("cash");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -41,8 +35,10 @@ const AddWalletModal: React.FC<AddWalletModalProps> = ({ onClose, onAdded }) => 
       const newWallet = await walletService.createWallet({
         user_id: user?.user_id ?? 1,
         name: name.trim(),
-        balance: parsedBalance,
+        initial_balance: parsedBalance,
+        current_balance: parsedBalance,
         wallet_type: walletType,
+        is_active: true,
       });
       onAdded(newWallet);
       onClose();
@@ -91,11 +87,11 @@ const AddWalletModal: React.FC<AddWalletModalProps> = ({ onClose, onAdded }) => 
               className={styles.select}
               value={walletType}
               onChange={(e) =>
-                setWalletType(e.target.value as Wallet["wallet_type"])
+                setWalletType(e.target.value as WalletType)
               }
             >
-              {WALLET_TYPES.map((t) => (
-                <option key={t} value={t}>{t}</option>
+              {WALLET_TYPE_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
           </div>

@@ -7,13 +7,20 @@ import clsx from 'clsx';
 interface SettingItemProps {
   item: SettingItemType;
   onToggle?: (id: string, value: boolean) => void;
+  onLinkClick?: (id: string) => void;
 }
 
-const SettingItem: React.FC<SettingItemProps> = ({ item, onToggle }) => {
-  const { icon: Icon, label, description, type, value } = item;
+const SettingItem: React.FC<SettingItemProps> = ({ item, onToggle, onLinkClick }) => {
+  const { icon: Icon, label, description, type, value, id } = item;
+
+  const handleClick = () => {
+    if (type === 'link' && onLinkClick) {
+      onLinkClick(id);
+    }
+  };
 
   return (
-    <div className={clsx(styles.item, type === 'link' && styles.clickable)}>
+    <div className={clsx(styles.item, type === 'link' && styles.clickable)} onClick={handleClick}>
       <div className={styles.iconContainer}>
         <Icon size={20} className={styles.icon} />
       </div>

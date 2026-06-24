@@ -6,9 +6,10 @@ import styles from './SettingSection.module.css';
 interface SettingSectionProps {
   section: SettingSectionType;
   onToggle?: (id: string, value: boolean) => void;
+  onLinkClick?: (id: string) => void;
 }
 
-const SettingSection: React.FC<SettingSectionProps> = ({ section, onToggle }) => {
+const SettingSection: React.FC<SettingSectionProps> = ({ section, onToggle, onLinkClick }) => {
   const { title, icon: Icon, items } = section;
 
   return (
@@ -20,7 +21,7 @@ const SettingSection: React.FC<SettingSectionProps> = ({ section, onToggle }) =>
       <div className={styles.itemsContainer}>
         {items.map((item, index) => (
           <React.Fragment key={item.id}>
-            <SettingItem item={item} onToggle={onToggle} />
+            <SettingItem item={item} onToggle={onToggle} onLinkClick={onLinkClick} />
             {index < items.length - 1 && <div className={styles.divider} />}
           </React.Fragment>
         ))}

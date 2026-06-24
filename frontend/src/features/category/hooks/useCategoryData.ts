@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { categoryService } from "../services/categoryService";
 import type { CategoryData, CategoryType } from "../../../types/category";
+import { budgetService } from "../services/budgetService";
 
 const withBudgetSummary = (data: CategoryData): CategoryData => {
   if (!data.summary.budget) {
@@ -66,8 +67,6 @@ export const useCategoryData = (initialType: CategoryType = "expense") => {
   }, [type]);
 
   useEffect(() => {
-    // Data loading is intentionally started when the selected tab changes.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchCategoryData();
   }, [fetchCategoryData]);
 
@@ -75,45 +74,58 @@ export const useCategoryData = (initialType: CategoryType = "expense") => {
     setType(newType);
   };
 
-  const updateCategoryBudget = (categoryId: number, budgetLimit: number) => {
-    setData((currentData) => {
-      if (!currentData) {
-        return currentData;
+  const updateCategoryBudget = async (categoryId: number, budgetLimit: number) => {
+    try {
+      const budgets = await budgetService.getBudgets();
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+
+      const existingBudget = budgets.find((b) => {
+        if (b.category_id !== categoryId) return false;
+        const start = new Date(b.start_date);
+        const end = new Date(b.end_date);
+        start.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 59, 999);
+        return now >= start && now <= end;
+      });
+
+      if (existingBudget) {
+        await budgetService.updateBudget(existingBudget.budget_id, {
+          limit_amount: Math.max(0, Math.round(budgetLimit)),
+        });
+      } else {
+        const category = data?.categories.find((c) => c.category_id === categoryId);
+        const categoryName = category ? category.name : "Danh mục";
+
+        await budgetService.createBudget({
+          category_id: categoryId,
+          name: "Ngân sách " + categoryName,
+          limit_amount: Math.max(0, Math.round(budgetLimit)),
+          start_date: startOfMonth,
+          end_date: endOfMonth,
+          alert: 80,
+        });
       }
 
-      const updatedData: CategoryData = {
-        ...currentData,
-        categories: currentData.categories.map((category) =>
-          category.category_id === categoryId
-            ? { ...category, budget_limit: Math.max(0, Math.round(budgetLimit)) }
-            : category
-        ),
-      };
-
-      return withBudgetSummary(updatedData);
-    });
+      await fetchCategoryData();
+    } catch (err) {
+      console.error("Lỗi khi cập nhật ngân sách:", err);
+    }
   };
 
-  const updateCategoryName = (categoryId: number, name: string) => {
+  const updateCategoryName = async (categoryId: number, name: string) => {
     const trimmedName = name.trim();
     if (!trimmedName) {
       return;
     }
 
-    setData((currentData) => {
-      if (!currentData) {
-        return currentData;
-      }
-
-      return {
-        ...currentData,
-        categories: currentData.categories.map((category) =>
-          category.category_id === categoryId
-            ? { ...category, name: trimmedName }
-            : category
-        ),
-      };
-    });
+    try {
+      await categoryService.updateCategoryName(categoryId, trimmedName);
+      await fetchCategoryData();
+    } catch (err) {
+      console.error("Lỗi khi cập nhật tên danh mục:", err);
+    }
   };
 
   return {
