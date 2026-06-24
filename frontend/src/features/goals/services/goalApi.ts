@@ -45,7 +45,7 @@ export const goalApi = {
       return MOCK_GOALS[idx];
     }
 
-    const response = await apiClient.post<unknown, SavingGoal>(`/goals/${goalId}/contribute`, payload);
+    const response = await apiClient.patch<unknown, SavingGoal>(`/goals/${goalId}/contribute`, payload);
     return response;
   },
 

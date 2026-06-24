@@ -2,6 +2,7 @@ import React from "react";
 import { Bike, CalendarDays, GraduationCap, Laptop, Plane } from "lucide-react";
 import { formatMoney } from "../../../../utils/formatMoney";
 import type { GoalStatus, SavingGoal } from "../../types/goal";
+import { getGoalMetrics } from "../../utils/goalMetrics";
 import styles from "./GoalCard.module.css";
 
 type GoalTone = "teal" | "coral" | "yellow" | "violet";
@@ -42,14 +43,18 @@ const getDaysLeft = (deadline: string) => {
 };
 
 const GoalCard: React.FC<GoalCardProps> = ({ goal, index = 0, onEdit, onDelete, onContribute }) => {
-  const safeTarget = typeof goal.target_amount === 'number' && isFinite(goal.target_amount) ? goal.target_amount : 0;
-  const safeCurrent = typeof goal.current_amount === 'number' && isFinite(goal.current_amount) ? goal.current_amount : 0;
-  const progress = safeTarget > 0
-    ? Math.round((safeCurrent / safeTarget) * 100)
-    : 0;
-  const remaining = Math.max(safeTarget - safeCurrent, 0);
+  const metrics = getGoalMetrics(goal);
+  const progress = Math.round(metrics.progressPercent);
+  const remaining = metrics.remainingAmount;
   const daysLeft = getDaysLeft(goal.end_date);
   const dailyAmount = daysLeft > 0 ? Math.ceil(remaining / daysLeft) : remaining;
+  const amountLabel = metrics.isCompleted
+    ? metrics.exceededAmount > 0 ? "Vượt" : "Hoàn thành"
+    : "Còn thiếu";
+  const amountValue = metrics.exceededAmount > 0 ? metrics.exceededAmount : remaining;
+  const amountNote = metrics.isCompleted
+    ? "Đã đạt mục tiêu"
+    : `${formatMoney(dailyAmount)}/ngày`;
   const visual = visualOptions[index % visualOptions.length];
   const Icon = visual.icon;
 
@@ -107,9 +112,9 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, index = 0, onEdit, onDelete, 
           <small>Còn {Math.max(daysLeft, 0)} ngày</small>
         </div>
         <div>
-          <span className={styles.metaLabel}>Còn thiếu</span>
-          <strong className={styles.remaining}>{formatMoney(remaining)}</strong>
-          <small>{formatMoney(dailyAmount)}/ngày</small>
+          <span className={styles.metaLabel}>{amountLabel}</span>
+          <strong className={styles.remaining}>{formatMoney(amountValue)}</strong>
+          <small>{amountNote}</small>
         </div>
       </footer>
     </article>

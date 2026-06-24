@@ -1,6 +1,7 @@
 import React from "react";
 import MainLayout from "../../../layouts/MainLayout";
 import { useDashboardData } from "../../dashboard/hooks/useDashboardData";
+import { getGoalMetrics } from "../../goals/utils/goalMetrics";
 import styles from "./ReportsPage.module.css";
 
 const ReportsPage: React.FC = () => {
@@ -21,6 +22,8 @@ const ReportsPage: React.FC = () => {
       </MainLayout>
     );
   }
+
+  const goalMetrics = getGoalMetrics(data.savings_goal);
 
   return (
     <MainLayout>
@@ -79,7 +82,7 @@ const ReportsPage: React.FC = () => {
                   <div
                     className={styles.goalProgressFill}
                     style={{
-                      width: `${Math.min((data.savings_goal.current_amount / data.savings_goal.target_amount) * 100, 100)}%`,
+                      width: `${goalMetrics.progressPercent}%`,
                     }}
                   />
                 </div>

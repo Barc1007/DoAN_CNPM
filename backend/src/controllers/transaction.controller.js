@@ -1,6 +1,6 @@
 const pool = require('../config/db');
 const { success, error } = require('../utils/response');
-const { encrypt, decrypt } = require('../Utils/crypto');
+const { encrypt, decrypt } = require('../utils/crypto');
 
 const getTransactions = async (req, res, next) => {
   try {

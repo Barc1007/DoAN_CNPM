@@ -1,6 +1,6 @@
 const pool = require('../config/db');
 const { success, error } = require('../utils/response');
-const { decrypt } = require('../Utils/crypto');
+const { decrypt } = require('../utils/crypto');
 
 const getNotifications = async (req, res, next) => {
   try {

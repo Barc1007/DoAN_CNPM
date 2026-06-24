@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
 const { success, error } = require('../utils/response');
-const { deriveKeyFromPassword, setSession, decrypt } = require('../Utils/crypto');
+const { deriveKeyFromPassword, setSession, encrypt, decrypt } = require('../utils/crypto');
 
 const SALT_ROUNDS = 10;
 
@@ -15,11 +15,17 @@ const register = async (req, res, next) => {
     }
 
     const [existing] = await pool.query(
-      'SELECT user_id FROM users WHERE username = ? OR email = ?',
-      [username, email]
+      'SELECT user_id, username, email FROM users WHERE username = ?',
+      [username]
     );
 
     if (existing.length > 0) {
+      return error(res, 'Tên đăng nhập hoặc email đã tồn tại', 409);
+    }
+
+    const [users] = await pool.query('SELECT email FROM users');
+    const emailExists = users.some((user) => decrypt(user.email) === email);
+    if (emailExists) {
       return error(res, 'Tên đăng nhập hoặc email đã tồn tại', 409);
     }
 

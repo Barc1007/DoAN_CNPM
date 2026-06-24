@@ -1,6 +1,31 @@
 const pool = require('../config/db');
 const { success, error } = require('../utils/response');
-const { encrypt, decrypt } = require('../Utils/crypto');
+const { encrypt, decrypt } = require('../utils/crypto');
+
+const buildGoalResponse = (goal, userId) => {
+  const target = Number(decrypt(goal.target_amount, userId)) || 0;
+  const current = Number(decrypt(goal.current_amount, userId)) || 0;
+  const remaining = Math.max(target - current, 0);
+  const exceeded = Math.max(current - target, 0);
+  const progress = target > 0 ? Math.min((current / target) * 100, 100) : 0;
+  const progressPercent = Math.round(progress * 100) / 100;
+  const isCompleted = target > 0 && current >= target;
+
+  return {
+    ...goal,
+    name: decrypt(goal.name, userId),
+    target_amount: target,
+    current_amount: current,
+    remaining_amount: remaining,
+    exceeded_amount: exceeded,
+    progress_percent: progressPercent,
+    is_completed: isCompleted,
+    remainingAmount: remaining,
+    exceededAmount: exceeded,
+    progressPercent,
+    isCompleted,
+  };
+};
 
 const getGoals = async (req, res, next) => {
   try {
@@ -16,17 +41,7 @@ const getGoals = async (req, res, next) => {
       [userId]
     );
 
-    const result = rows.map((g) => {
-      const target = Number(decrypt(g.target_amount, userId)) || 0;
-      const current = Number(decrypt(g.current_amount, userId)) || 0;
-      return {
-        ...g,
-        name: decrypt(g.name, userId),
-        target_amount: target,
-        current_amount: current,
-        progress_percent: target > 0 ? Math.round((current / target) * 100 * 100) / 100 : 0,
-      };
-    });
+    const result = rows.map((g) => buildGoalResponse(g, userId));
 
     return success(res, result);
   } catch (err) {
@@ -43,12 +58,14 @@ const createGoal = async (req, res, next) => {
       return error(res, 'Vui lòng nhập tên và số tiền mục tiêu', 400);
     }
 
+    const targetAmount = Number(target_amount);
     const initialCurrent = current_amount !== undefined ? Number(current_amount) : 0;
+    const status = targetAmount > 0 && initialCurrent >= targetAmount ? 'completed' : 'active';
 
     const [result] = await pool.query(
       `INSERT INTO goals (user_id, wallet_id, name, target_amount, end_date, status, current_amount)
-       VALUES (?, ?, ?, ?, ?, 'active', ?)`,
-      [userId, wallet_id || null, encrypt(name, userId), encrypt(String(target_amount), userId), end_date || null, encrypt(String(initialCurrent), userId)]
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [userId, wallet_id || null, encrypt(name, userId), encrypt(String(targetAmount), userId), end_date || null, status, encrypt(String(initialCurrent), userId)]
     );
 
     const [rows] = await pool.query(
@@ -56,14 +73,7 @@ const createGoal = async (req, res, next) => {
       [result.insertId]
     );
 
-    const g = rows[0];
-    const response = {
-      ...g,
-      name: decrypt(g.name, userId),
-      target_amount: Number(decrypt(g.target_amount, userId)) || 0,
-      current_amount: Number(decrypt(g.current_amount, userId)) || 0,
-      progress_percent: 0,
-    };
+    const response = buildGoalResponse(rows[0], userId);
 
     return success(res, response, 'Tạo mục tiêu thành công', 201);
   } catch (err) {
@@ -77,7 +87,8 @@ const contributeToGoal = async (req, res, next) => {
     const { amount, wallet_id, note } = req.body;
     const userId = req.user.user_id;
 
-    if (!amount) {
+    const contributionAmount = Number(amount);
+    if (!Number.isFinite(contributionAmount) || contributionAmount <= 0) {
       return error(res, 'Thông tin góp tiền không hợp lệ', 400);
     }
 
@@ -96,18 +107,20 @@ const contributeToGoal = async (req, res, next) => {
       return error(res, 'Vui lòng chọn ví để góp tiền', 400);
     }
 
+    const targetAmount = Number(decrypt(goal.target_amount, userId)) || 0;
     const currentAmount = Number(decrypt(goal.current_amount, userId)) || 0;
-    const newCurrentAmount = currentAmount + Number(amount);
+    const newCurrentAmount = currentAmount + contributionAmount;
+    const status = targetAmount > 0 && newCurrentAmount >= targetAmount ? 'completed' : 'active';
 
     await pool.query(
-      'UPDATE goals SET current_amount = ? WHERE goal_id = ?',
-      [encrypt(String(newCurrentAmount), userId), goalId]
+      'UPDATE goals SET current_amount = ?, status = ? WHERE goal_id = ?',
+      [encrypt(String(newCurrentAmount), userId), status, goalId]
     );
 
     await pool.query(
       `INSERT INTO goal_contributions (goal_id, wallet_id, amount, note)
        VALUES (?, ?, ?, ?)`,
-      [goalId, walletId, encrypt(String(amount), userId), encrypt(note || '', userId)]
+      [goalId, walletId, encrypt(String(contributionAmount), userId), encrypt(note || '', userId)]
     );
 
     const [rows] = await pool.query(
@@ -115,16 +128,7 @@ const contributeToGoal = async (req, res, next) => {
       [goalId]
     );
 
-    const g = rows[0];
-    const target = Number(decrypt(g.target_amount, userId)) || 0;
-    const current = Number(decrypt(g.current_amount, userId)) || 0;
-    const response = {
-      ...g,
-      name: decrypt(g.name, userId),
-      target_amount: target,
-      current_amount: current,
-      progress_percent: target > 0 ? Math.round((current / target) * 100 * 100) / 100 : 0,
-    };
+    const response = buildGoalResponse(rows[0], userId);
 
     return success(res, response, 'Góp tiền thành công');
   } catch (err) {
@@ -135,7 +139,7 @@ const contributeToGoal = async (req, res, next) => {
 const updateGoal = async (req, res, next) => {
   try {
     const { goalId } = req.params;
-    const { name, target_amount, end_date, wallet_id } = req.body;
+    const { name, target_amount, current_amount, end_date, wallet_id } = req.body;
     const userId = req.user.user_id;
 
     const [goals] = await pool.query(
@@ -151,10 +155,18 @@ const updateGoal = async (req, res, next) => {
     const updates = [];
     const values = [];
 
+    const nextTarget = target_amount !== undefined ? Number(target_amount) : Number(decrypt(goal.target_amount, userId)) || 0;
+    const nextCurrent = current_amount !== undefined ? Number(current_amount) : Number(decrypt(goal.current_amount, userId)) || 0;
+
     if (name !== undefined) { updates.push('name = ?'); values.push(encrypt(name, userId)); }
-    if (target_amount !== undefined) { updates.push('target_amount = ?'); values.push(encrypt(String(target_amount), userId)); }
+    if (target_amount !== undefined) { updates.push('target_amount = ?'); values.push(encrypt(String(nextTarget), userId)); }
+    if (current_amount !== undefined) { updates.push('current_amount = ?'); values.push(encrypt(String(nextCurrent), userId)); }
     if (end_date !== undefined) { updates.push('end_date = ?'); values.push(end_date); }
     if (wallet_id !== undefined) { updates.push('wallet_id = ?'); values.push(wallet_id); }
+    if (target_amount !== undefined || current_amount !== undefined) {
+      updates.push('status = ?');
+      values.push(nextTarget > 0 && nextCurrent >= nextTarget ? 'completed' : 'active');
+    }
 
     if (updates.length === 0) {
       return error(res, 'Không có dữ liệu để cập nhật', 400);
@@ -171,16 +183,7 @@ const updateGoal = async (req, res, next) => {
       [goalId]
     );
 
-    const g = rows[0];
-    const target = Number(decrypt(g.target_amount, userId)) || 0;
-    const current = Number(decrypt(g.current_amount, userId)) || 0;
-    const response = {
-      ...g,
-      name: decrypt(g.name, userId),
-      target_amount: target,
-      current_amount: current,
-      progress_percent: target > 0 ? Math.round((current / target) * 100 * 100) / 100 : 0,
-    };
+    const response = buildGoalResponse(rows[0], userId);
 
     return success(res, response, 'Cập nhật mục tiêu thành công');
   } catch (err) {

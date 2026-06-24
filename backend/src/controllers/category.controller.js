@@ -1,6 +1,6 @@
 const pool = require('../config/db');
 const { success, error } = require('../utils/response');
-const { decrypt, encrypt } = require('../Utils/crypto');
+const { decrypt, encrypt } = require('../utils/crypto');
 
 const getCategoryData = async (req, res, next) => {
   try {

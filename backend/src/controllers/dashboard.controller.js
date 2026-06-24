@@ -1,6 +1,31 @@
 const pool = require('../config/db');
 const { success } = require('../utils/response');
-const { decrypt } = require('../Utils/crypto');
+const { decrypt } = require('../utils/crypto');
+
+const buildSavingsGoal = (goal, userId) => {
+  const target = Number(decrypt(goal.target_amount, userId)) || 0;
+  const current = Number(decrypt(goal.current_amount, userId)) || 0;
+  const remaining = Math.max(target - current, 0);
+  const exceeded = Math.max(current - target, 0);
+  const progress = target > 0 ? Math.min((current / target) * 100, 100) : 0;
+  const progressPercent = Math.round(progress * 100) / 100;
+  const isCompleted = target > 0 && current >= target;
+
+  return {
+    ...goal,
+    name: decrypt(goal.name, userId),
+    target_amount: target,
+    current_amount: current,
+    remaining_amount: remaining,
+    exceeded_amount: exceeded,
+    progress_percent: progressPercent,
+    is_completed: isCompleted,
+    remainingAmount: remaining,
+    exceededAmount: exceeded,
+    progressPercent,
+    isCompleted,
+  };
+};
 
 const getDashboardSummary = async (req, res, next) => {
   try {
@@ -92,21 +117,31 @@ const getDashboardSummary = async (req, res, next) => {
       }));
 
     const [goalRows] = await pool.query(
-      `SELECT goal_id AS saving_goal_id, name, target_amount, current_amount, end_date
+      `SELECT goal_id AS saving_goal_id, name, target_amount, current_amount, end_date, status
        FROM goals
-       WHERE user_id = ? AND status = 'active'
+       WHERE user_id = ? AND status IN ('active', 'completed')
        ORDER BY created_at DESC LIMIT 1`,
       [userId]
     );
 
     const savingsGoal = goalRows.length > 0
-      ? {
-          ...goalRows[0],
-          name: decrypt(goalRows[0].name, userId),
-          target_amount: Number(decrypt(goalRows[0].target_amount, userId)) || 0,
-          current_amount: Number(decrypt(goalRows[0].current_amount, userId)) || 0,
-        }
-      : { saving_goal_id: 0, name: 'Chưa có mục tiêu', target_amount: 0, current_amount: 0, end_date: null };
+      ? buildSavingsGoal(goalRows[0], userId)
+      : {
+          saving_goal_id: 0,
+          name: 'Chưa có mục tiêu',
+          target_amount: 0,
+          current_amount: 0,
+          remaining_amount: 0,
+          exceeded_amount: 0,
+          progress_percent: 0,
+          is_completed: false,
+          remainingAmount: 0,
+          exceededAmount: 0,
+          progressPercent: 0,
+          isCompleted: false,
+          end_date: null,
+          status: 'active',
+        };
 
     const dashboardData = {
       total_balance: totalBalance,

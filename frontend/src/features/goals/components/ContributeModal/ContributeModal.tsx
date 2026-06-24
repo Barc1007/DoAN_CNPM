@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { X } from "lucide-react";
 import { goalApi } from "../../services/goalApi";
 import type { SavingGoal } from "../../types/goal";
+import { getGoalMetrics, getGoalStatusText } from "../../utils/goalMetrics";
 import styles from "./ContributeModal.module.css";
 
 interface ContributeModalProps {
@@ -14,6 +15,7 @@ const ContributeModal: React.FC<ContributeModalProps> = ({ goal, onClose, onCont
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const metrics = getGoalMetrics(goal);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,7 +70,7 @@ const ContributeModal: React.FC<ContributeModalProps> = ({ goal, onClose, onCont
           <p className={styles.hint}>
             Mục tiêu: {goal.target_amount.toLocaleString("vi-VN")} đ<br />
             Đã góp: {goal.current_amount.toLocaleString("vi-VN")} đ<br />
-            Còn thiếu: {(goal.target_amount - goal.current_amount).toLocaleString("vi-VN")} đ
+            {getGoalStatusText(metrics)}
           </p>
 
           {error && <p className={styles.error}>{error}</p>}

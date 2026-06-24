@@ -9,6 +9,7 @@ import { formatDate } from "../../../utils/formatDate";
 import { Plus } from "lucide-react";
 import styles from "./DashboardPage.module.css";
 import { useAuth } from "../../../features/auth/context/AuthContext";
+import { getGoalMetrics } from "../../goals/utils/goalMetrics";
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
@@ -29,6 +30,11 @@ const DashboardPage: React.FC = () => {
       </MainLayout>
     );
   }
+
+  const goalMetrics = getGoalMetrics(data.savings_goal);
+  const goalDeadline = data.savings_goal.end_date
+    ? formatDate(new Date(data.savings_goal.end_date))
+    : "Chưa có hạn chót";
 
   return (
     <MainLayout>
@@ -53,10 +59,10 @@ const DashboardPage: React.FC = () => {
         <section className={styles.rightColumn}>
           <GoalCard 
             name={data.savings_goal.name}
-            description={`Hạn chót: ${formatDate(new Date(data.savings_goal.end_date))}`}
+            description={`Hạn chót: ${goalDeadline}`}
             current_amount={data.savings_goal.current_amount}
             target_amount={data.savings_goal.target_amount}
-            percentage={Math.min(100, Math.round((data.savings_goal.current_amount / data.savings_goal.target_amount) * 100))}
+            percentage={Math.round(goalMetrics.progressPercent)}
           />
           <TransactionList transactions={data.recent_transactions} />
         </section>

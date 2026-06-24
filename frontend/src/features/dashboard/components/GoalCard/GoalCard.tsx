@@ -2,6 +2,7 @@ import React from "react";
 import { Target, Laptop } from "lucide-react";
 import styles from "./GoalCard.module.css";
 import { formatMoney } from "../../../../utils/formatMoney";
+import { getGoalMetrics, getGoalStatusText } from "../../../goals/utils/goalMetrics";
 
 interface GoalCardProps {
   name: string;
@@ -18,6 +19,9 @@ const GoalCard: React.FC<GoalCardProps> = ({
   target_amount,
   percentage,
 }) => {
+  const metrics = getGoalMetrics({ current_amount, target_amount });
+  const safePercentage = Math.round(Math.min(Math.max(metrics.progressPercent || percentage || 0, 0), 100));
+
   return (
     <div className={styles.card}>
       <div className={styles.header}>
@@ -40,12 +44,12 @@ const GoalCard: React.FC<GoalCardProps> = ({
       <div className={styles.progressSection}>
         <div className={styles.progressLabel}>
           <span>Tiến độ</span>
-          <span>{percentage}%</span>
+          <span>{safePercentage}%</span>
         </div>
         <div className={styles.progressBarBg}>
           <div 
             className={styles.progressBarFill} 
-            style={{ width: `${percentage}%` }}
+            style={{ width: `${safePercentage}%` }}
           />
         </div>
       </div>
@@ -58,7 +62,7 @@ const GoalCard: React.FC<GoalCardProps> = ({
       </div>
 
       <p className={styles.status}>
-        Còn <span>{formatMoney(target_amount - current_amount)}</span> nữa là đạt mục tiêu! 🎯
+        {getGoalStatusText(metrics)}
       </p>
     </div>
   );
