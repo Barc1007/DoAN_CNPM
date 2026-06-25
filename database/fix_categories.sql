@@ -1,0 +1,13 @@
+SET NAMES utf8mb4;
+USE studentmoney;
+UPDATE categories SET name = 'Ăn uống' WHERE category_id = 1;
+UPDATE categories SET name = 'Di chuyển' WHERE category_id = 2;
+UPDATE categories SET name = 'Học phí' WHERE category_id = 3;
+UPDATE categories SET name = 'Giải trí' WHERE category_id = 4;
+UPDATE categories SET name = 'Mua sắm' WHERE category_id = 5;
+UPDATE categories SET name = 'Tiền nhà' WHERE category_id = 6;
+UPDATE categories SET name = 'Hóa đơn điện/nước' WHERE category_id = 7;
+UPDATE categories SET name = 'Lương / Trợ cấp' WHERE category_id = 8;
+UPDATE categories SET name = 'Tiền thưởng' WHERE category_id = 9;
+UPDATE categories SET name = 'Tiền phụ huynh' WHERE category_id = 10;
+UPDATE categories SET name = 'Thu nhập khác' WHERE category_id = 11;
