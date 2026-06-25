@@ -54,7 +54,12 @@ const TransactionsPage = () => {
       setLoadingWallets(true);
       try {
         const list = await walletService.getWallets();
-        setWallets(list.map((w) => ({ wallet_id: w.wallet_id, name: w.name })));
+        const walletOptions = list.map((w) => ({ wallet_id: w.wallet_id, name: w.name }));
+        setWallets(walletOptions);
+        setFormData((prev) => {
+          if (prev.wallet_id !== 0 || walletOptions.length === 0) return prev;
+          return { ...prev, wallet_id: walletOptions[0].wallet_id };
+        });
       } catch {
         setWallets([]);
       } finally {
@@ -69,15 +74,36 @@ const TransactionsPage = () => {
       setLoadingCategories(true);
       try {
         const data = await categoryService.getCategoryData(formData.type);
-        setCategories(data.categories.map((c) => ({ category_id: c.category_id, name: c.name })));
+        const categoryOptions = data.categories.map((c) => ({ category_id: c.category_id, name: c.name }));
+        setCategories(categoryOptions);
+        setFormData((prev) => {
+          const currentCategoryExists = categoryOptions.some(
+            (category) => category.category_id === prev.category_id
+          );
+          if (currentCategoryExists) return prev;
+          return { ...prev, category_id: categoryOptions[0]?.category_id ?? 0 };
+        });
       } catch {
         setCategories([]);
+        setFormData((prev) => ({ ...prev, category_id: 0 }));
       } finally {
         setLoadingCategories(false);
       }
     };
     loadCategories();
   }, [formData.type]);
+
+  const openAddForm = () => {
+    setSubmitError(null);
+    setFormData((prev) => ({
+      ...prev,
+      wallet_id: prev.wallet_id || wallets[0]?.wallet_id || 0,
+      category_id: prev.category_id || categories[0]?.category_id || 0,
+      user_id: user?.user_id || 0,
+      transaction_date: today,
+    }));
+    setShowForm(true);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,7 +169,7 @@ const TransactionsPage = () => {
           error={error}
         />
 
-        <button className={styles.fab} onClick={() => setShowForm(true)}>
+        <button className={styles.fab} onClick={openAddForm}>
           <Plus size={26} />
         </button>
 
@@ -161,7 +187,7 @@ const TransactionsPage = () => {
                 <button
                   type="button"
                   className={`${styles.typeTab} ${formData.type === 'expense' ? styles.typeTabActive : ''}`}
-                  onClick={() => setFormData({...formData, type: 'expense'})}
+                  onClick={() => setFormData({...formData, type: 'expense', category_id: 0})}
                 >
                   <ArrowUpFromLine size={16} />
                   <span>Chi tiêu</span>
@@ -169,7 +195,7 @@ const TransactionsPage = () => {
                 <button
                   type="button"
                   className={`${styles.typeTab} ${formData.type === 'income' ? styles.typeTabActive : ''} ${styles.typeTabIncome}`}
-                  onClick={() => setFormData({...formData, type: 'income'})}
+                  onClick={() => setFormData({...formData, type: 'income', category_id: 0})}
                 >
                   <ArrowDownToLine size={16} />
                   <span>Thu nhập</span>

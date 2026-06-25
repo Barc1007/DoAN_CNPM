@@ -60,8 +60,8 @@ const updateProfile = async (req, res, next) => {
     const fields = [];
     const values = [];
 
-    if (full_name !== undefined) { fields.push('full_name = ?'); values.push(encrypt(full_name)); }
-    if (email !== undefined) { fields.push('email = ?'); values.push(encrypt(email)); }
+    if (full_name !== undefined) { fields.push('full_name = ?'); values.push(encrypt(full_name, userId)); }
+    if (email !== undefined) { fields.push('email = ?'); values.push(encrypt(email, userId)); }
 
     if (fields.length === 0) {
       return error(res, 'Không có dữ liệu để cập nhật', 400);

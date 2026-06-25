@@ -29,14 +29,18 @@ const statusLabels: Record<GoalStatus, string> = {
   cancelled: "Đã hủy",
 };
 
-const formatDeadline = (value: string) => {
+const formatDeadline = (value?: string | null) => {
+  if (!value) return null;
   const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
   return `${date.getDate()} thg ${date.getMonth() + 1}, ${date.getFullYear()}`;
 };
 
-const getDaysLeft = (deadline: string) => {
+const getDaysLeft = (deadline?: string | null) => {
+  if (!deadline) return 0;
   const today = new Date();
   const endDate = new Date(deadline);
+  if (Number.isNaN(endDate.getTime())) return 0;
   today.setHours(0, 0, 0, 0);
   endDate.setHours(0, 0, 0, 0);
   return Math.ceil((endDate.getTime() - today.getTime()) / 86400000);
@@ -57,6 +61,8 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, index = 0, onEdit, onDelete, 
     : `${formatMoney(dailyAmount)}/ngày`;
   const visual = visualOptions[index % visualOptions.length];
   const Icon = visual.icon;
+  const startedAt = formatDeadline(goal.start_date ?? goal.created_at);
+  const deadline = formatDeadline(goal.end_date) ?? "Chưa có hạn";
 
   return (
     <article className={`${styles.card} ${styles[visual.tone]}`}>
@@ -66,7 +72,7 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, index = 0, onEdit, onDelete, 
         </div>
         <div>
           <h3>{goal.name}</h3>
-          <p>{statusLabels[goal.status]} từ {formatDeadline(goal.start_date)}</p>
+          <p>{startedAt ? `${statusLabels[goal.status]} từ ${startedAt}` : statusLabels[goal.status]}</p>
         </div>
       </header>
 
@@ -108,7 +114,7 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, index = 0, onEdit, onDelete, 
             <CalendarDays size={15} />
             Hạn chót
           </span>
-          <strong>{formatDeadline(goal.end_date)}</strong>
+          <strong>{deadline}</strong>
           <small>Còn {Math.max(daysLeft, 0)} ngày</small>
         </div>
         <div>

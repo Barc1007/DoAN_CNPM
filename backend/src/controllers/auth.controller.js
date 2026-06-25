@@ -2,9 +2,92 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
 const { success, error } = require('../utils/response');
-const { deriveKeyFromPassword, setSession, encrypt, decrypt } = require('../utils/crypto');
+const { deriveKeyFromPassword, setSession, encryptWithKey, decrypt } = require('../utils/crypto');
 
 const SALT_ROUNDS = 10;
+const DEFAULT_CATEGORIES = [
+  ['Ăn uống', 'expense'],
+  ['Di chuyển', 'expense'],
+  ['Học phí', 'expense'],
+  ['Giải trí', 'expense'],
+  ['Mua sắm', 'expense'],
+  ['Tiền nhà', 'expense'],
+  ['Hóa đơn điện/nước', 'expense'],
+  ['Lương / Trợ cấp', 'income'],
+  ['Tiền thưởng', 'income'],
+  ['Tiền phụ huynh', 'income'],
+  ['Thu nhập khác', 'income'],
+];
+
+const ensureDefaultCategories = async () => {
+  const [rows] = await pool.query(
+    'SELECT name, type FROM categories WHERE user_id IS NULL'
+  );
+  const existing = new Set(rows.map((row) => `${row.name}:${row.type}`));
+  const missing = DEFAULT_CATEGORIES.filter(
+    ([name, type]) => !existing.has(`${name}:${type}`)
+  );
+
+  if (missing.length === 0) return;
+
+  await pool.query(
+    'INSERT INTO categories (user_id, name, type) VALUES ?',
+    [missing.map(([name, type]) => [null, name, type])]
+  );
+};
+
+const reEncryptUserData = async (userId, newEncryptionKey) => {
+  const encryptValue = (value) => encryptWithKey(decrypt(value, userId), newEncryptionKey);
+
+  const [users] = await pool.query(
+    'SELECT full_name, email FROM users WHERE user_id = ?',
+    [userId]
+  );
+  if (users.length > 0) {
+    await pool.query(
+      'UPDATE users SET full_name = ?, email = ? WHERE user_id = ?',
+      [encryptValue(users[0].full_name), encryptValue(users[0].email), userId]
+    );
+  }
+
+  const reEncryptTable = async (table, idColumn, fields, whereSql, params) => {
+    const [rows] = await pool.query(
+      `SELECT ${idColumn}, ${fields.join(', ')} FROM ${table} WHERE ${whereSql}`,
+      params
+    );
+
+    for (const row of rows) {
+      const assignments = fields.map((field) => `${field} = ?`).join(', ');
+      const values = fields.map((field) => encryptValue(row[field]));
+      await pool.query(
+        `UPDATE ${table} SET ${assignments} WHERE ${idColumn} = ?`,
+        [...values, row[idColumn]]
+      );
+    }
+  };
+
+  await reEncryptTable('categories', 'category_id', ['name'], 'user_id = ?', [userId]);
+  await reEncryptTable('wallets', 'wallet_id', ['name', 'initial_balance'], 'user_id = ?', [userId]);
+  await reEncryptTable('transactions', 'transaction_id', ['amount', 'note'], 'user_id = ?', [userId]);
+  await reEncryptTable('budgets', 'budget_id', ['name', 'limit_amount', 'spent_amount'], 'user_id = ?', [userId]);
+  await reEncryptTable('goals', 'goal_id', ['name', 'target_amount', 'current_amount'], 'user_id = ?', [userId]);
+  await reEncryptTable('notifications', 'notification_id', ['title', 'message'], 'user_id = ?', [userId]);
+
+  const [contributions] = await pool.query(
+    `SELECT gc.contribution_id, gc.amount, gc.note
+     FROM goal_contributions gc
+     JOIN goals g ON gc.goal_id = g.goal_id
+     WHERE g.user_id = ?`,
+    [userId]
+  );
+
+  for (const row of contributions) {
+    await pool.query(
+      'UPDATE goal_contributions SET amount = ?, note = ? WHERE contribution_id = ?',
+      [encryptValue(row.amount), encryptValue(row.note), row.contribution_id]
+    );
+  }
+};
 
 const register = async (req, res, next) => {
   try {
@@ -15,7 +98,7 @@ const register = async (req, res, next) => {
     }
 
     const [existing] = await pool.query(
-      'SELECT user_id, username, email FROM users WHERE username = ?',
+      'SELECT user_id FROM users WHERE username = ?',
       [username]
     );
 
@@ -23,18 +106,16 @@ const register = async (req, res, next) => {
       return error(res, 'Tên đăng nhập hoặc email đã tồn tại', 409);
     }
 
-    const [users] = await pool.query('SELECT email FROM users');
-    const emailExists = users.some((user) => decrypt(user.email) === email);
-    if (emailExists) {
-      return error(res, 'Tên đăng nhập hoặc email đã tồn tại', 409);
-    }
-
-    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+    const { authenticationSecret, encryptionKey } = deriveKeyFromPassword(password);
+    const hashedPassword = await bcrypt.hash(authenticationSecret, SALT_ROUNDS);
 
     const [result] = await pool.query(
       'INSERT INTO users (full_name, username, email, password) VALUES (?, ?, ?, ?)',
-      [encrypt(full_name), username, encrypt(email), hashedPassword]
+      [encryptWithKey(full_name, encryptionKey), username, encryptWithKey(email, encryptionKey), hashedPassword]
     );
+
+    setSession(result.insertId, { key: encryptionKey, password });
+    await ensureDefaultCategories();
 
     const newUser = {
       user_id: result.insertId,
@@ -68,9 +149,21 @@ const login = async (req, res, next) => {
 
     const user = rows[0];
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const { authenticationSecret, encryptionKey } = deriveKeyFromPassword(password);
+    let isMatch = await bcrypt.compare(authenticationSecret, user.password);
+    const isLegacyPasswordHash = !isMatch && await bcrypt.compare(password, user.password);
+    isMatch = isMatch || isLegacyPasswordHash;
+
     if (!isMatch) {
       return error(res, 'Tên đăng nhập hoặc mật khẩu không đúng', 401);
+    }
+
+    if (isLegacyPasswordHash) {
+      const upgradedPassword = await bcrypt.hash(authenticationSecret, SALT_ROUNDS);
+      await pool.query(
+        'UPDATE users SET password = ? WHERE user_id = ?',
+        [upgradedPassword, user.user_id]
+      );
     }
 
     const token = jwt.sign(
@@ -79,9 +172,8 @@ const login = async (req, res, next) => {
       { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     );
 
-    // Derive encryption key from password (full 32 bytes) and store session
-    const { encryptionKey } = deriveKeyFromPassword(password);
     setSession(user.user_id, { key: encryptionKey, password });
+    await ensureDefaultCategories();
 
     // Decrypt user fields (support both old CryptoJS and new AES format)
     const fullName = decrypt(user.full_name, user.user_id);
@@ -122,20 +214,33 @@ const changePassword = async (req, res, next) => {
       return error(res, 'Không tìm thấy người dùng', 404);
     }
 
-    const isMatch = await bcrypt.compare(current_password, rows[0].password);
+    const {
+      authenticationSecret: currentAuthenticationSecret,
+      encryptionKey: currentEncryptionKey,
+    } = deriveKeyFromPassword(current_password);
+    let isMatch = await bcrypt.compare(currentAuthenticationSecret, rows[0].password);
+    const isLegacyPasswordHash = !isMatch && await bcrypt.compare(current_password, rows[0].password);
+    isMatch = isMatch || isLegacyPasswordHash;
+
     if (!isMatch) {
       return error(res, 'Mật khẩu hiện tại không đúng', 401);
     }
 
-    const hashedPassword = await bcrypt.hash(new_password, SALT_ROUNDS);
+    const {
+      authenticationSecret: newAuthenticationSecret,
+      encryptionKey: newEncryptionKey,
+    } = deriveKeyFromPassword(new_password);
+
+    setSession(userId, { key: currentEncryptionKey, password: current_password });
+    await reEncryptUserData(userId, newEncryptionKey);
+
+    const hashedPassword = await bcrypt.hash(newAuthenticationSecret, SALT_ROUNDS);
     await pool.query(
       'UPDATE users SET password = ? WHERE user_id = ?',
       [hashedPassword, userId]
     );
 
-    // Update session with new password
-    const { encryptionKey } = deriveKeyFromPassword(new_password);
-    setSession(userId, { key: encryptionKey, password: new_password });
+    setSession(userId, { key: newEncryptionKey, password: new_password });
 
     return success(res, null, 'Đổi mật khẩu thành công');
   } catch (err) {

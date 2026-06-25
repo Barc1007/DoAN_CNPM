@@ -4,7 +4,7 @@ const { encrypt, decrypt } = require('../utils/crypto');
 
 const getTransactions = async (req, res, next) => {
   try {
-    const userId = req.query.user_id || req.user.user_id;
+    const userId = req.user.user_id;
 
     const [rows] = await pool.query(
       `SELECT * FROM v_transactions WHERE user_id = ? ORDER BY transaction_date DESC`,
@@ -26,7 +26,7 @@ const getTransactions = async (req, res, next) => {
 const createTransaction = async (req, res, next) => {
   try {
     const { wallet_id, category_id, amount, transaction_date, note } = req.body;
-    const userId = req.body.user_id || req.user.user_id;
+    const userId = req.user.user_id;
 
     if (!wallet_id || !category_id || !amount) {
       return error(res, 'Vui lòng điền đầy đủ thông tin giao dịch', 400);

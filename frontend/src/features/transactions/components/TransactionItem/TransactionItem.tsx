@@ -36,12 +36,15 @@ const formatCurrency = (amount: number): string =>
   amount.toLocaleString("vi-VN") + " đ";
 
 const formatDate = (dateStr: string): string => {
-  const [year, month, day] = dateStr.split("-").map(Number);
+  const match = String(dateStr).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!match) return "Không rõ ngày";
+
+  const [, year, month, day] = match;
   return `${day} tháng ${month}, ${year}`;
 };
 
 const TransactionItem: React.FC<TransactionItemProps> = ({ transaction }) => {
-  const isIncome = transaction.type === "INCOME";
+  const isIncome = String(transaction.type).toLowerCase() === "income";
   const IconComponent = ICON_MAP[transaction.icon_name] ?? HelpCircle;
 
   return (

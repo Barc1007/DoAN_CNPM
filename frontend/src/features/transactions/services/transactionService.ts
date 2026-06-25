@@ -54,7 +54,9 @@ export const transactionService = {
         if (String(t.type).toUpperCase() === "INCOME") acc.totalIncome += Number(t.amount);
         else acc.totalExpense += Number(t.amount);
 
-        const [year, month] = t.transaction_date.split("-").map(Number);
+        const match = String(t.transaction_date).match(/^(\d{4})-(\d{2})/);
+        const year = match ? Number(match[1]) : NaN;
+        const month = match ? Number(match[2]) : NaN;
         if (year === currentYear && month === currentMonth) {
           acc.currentMonthCount++;
         }

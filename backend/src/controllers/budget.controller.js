@@ -59,7 +59,7 @@ const createBudget = async (req, res, next) => {
     const [result] = await pool.query(
       `INSERT INTO budgets (user_id, category_id, name, limit_amount, start_date, end_date, alert, spent_amount)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [userId, category_id || null, encrypt(name, userId), encrypt(String(limit_amount), userId), start_date, end_date, alert ?? 80, 0]
+      [userId, category_id || null, encrypt(name, userId), encrypt(String(limit_amount), userId), start_date, end_date, alert ?? 80, encrypt('0', userId)]
     );
 
     const [rows] = await pool.query(

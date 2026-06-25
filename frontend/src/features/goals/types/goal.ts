@@ -15,8 +15,9 @@ export interface SavingGoal {
   exceededAmount?: number;
   progressPercent?: number;
   isCompleted?: boolean;
-  start_date: string;
-  end_date: string;
+  start_date: string | null;
+  end_date: string | null;
+  created_at?: string | null;
   status: GoalStatus;
 }
 

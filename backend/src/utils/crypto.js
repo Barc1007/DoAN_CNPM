@@ -31,26 +31,26 @@ getGlobalKey._cached = false;
 getGlobalKey._value = null;
 
 /**
- * Derive a 32-byte encryption key from password.
- * Returns FULL sha256 (32 bytes) as encryptionKey, no splitting.
+ * Derive separate authentication and encryption materials from one password.
+ * The authentication secret is bcrypt-hashed in DB; the encryption key stays in memory.
  */
 function deriveKeyFromPassword(password) {
-  const encryptionKey = crypto.createHash('sha256').update(password).digest();
-  // passwordHash is first 16 bytes as hex string for verification
-  const passwordHash = encryptionKey.slice(0, 16).toString('hex');
-  return { passwordHash, encryptionKey };
+  const digest = crypto.createHash('sha512').update(password).digest();
+  const authenticationSecret = digest.slice(0, 32).toString('hex');
+  const encryptionKey = digest.slice(32, 64);
+  return { passwordHash: authenticationSecret, authenticationSecret, encryptionKey };
 }
 
 function getSession(userId) {
-  return userSessions.get(userId);
+  return userSessions.get(String(userId));
 }
 
 function setSession(userId, session) {
-  userSessions.set(userId, session);
+  userSessions.set(String(userId), session);
 }
 
 function removeSession(userId) {
-  userSessions.delete(userId);
+  userSessions.delete(String(userId));
 }
 
 function decryptNewFormat(ciphertext, key) {
@@ -98,11 +98,9 @@ function decryptOldFormat(ciphertext, password) {
   }
 }
 
-function encrypt(text, userId) {
+function encryptWithKey(text, key) {
   if (text === null || text === undefined || text === '') return '';
-  
-  const key = getGlobalKey();
-  
+
   if (!key || key.length !== 32) {
     throw new Error('Invalid encryption key length: expected 32 bytes, got ' + (key ? key.length : 'null'));
   }
@@ -114,15 +112,41 @@ function encrypt(text, userId) {
   return iv.toString('hex') + ':' + encrypted;
 }
 
+function getUserKey(userId) {
+  const session = getSession(userId);
+  return session && session.key ? session.key : null;
+}
+
+function encrypt(text, userId) {
+  if (text === null || text === undefined || text === '') return '';
+
+  if (userId) {
+    const key = getUserKey(userId);
+    if (!key) {
+      throw new Error('Phiên mã hóa đã hết hạn, vui lòng đăng nhập lại');
+    }
+    return encryptWithKey(text, key);
+  }
+
+  return encryptWithKey(text, getGlobalKey());
+}
+
 function decrypt(ciphertext, userId) {
   if (!ciphertext || typeof ciphertext !== 'string') return ciphertext;
-  
-  const key = getGlobalKey();
-  
-  if (!key || key.length !== 32) return ciphertext;
-  
-  const newResult = decryptNewFormat(ciphertext, key);
-  if (newResult !== null) return newResult;
+
+  const session = getSession(userId);
+  if (session && session.key) {
+    const sessionResult = decryptNewFormat(ciphertext, session.key);
+    if (sessionResult !== null) return sessionResult;
+
+    if (session.password) {
+      const oldResult = decryptOldFormat(ciphertext, session.password);
+      if (oldResult !== null) return oldResult;
+    }
+  }
+
+  const globalResult = decryptNewFormat(ciphertext, getGlobalKey());
+  if (globalResult !== null) return globalResult;
   
   return ciphertext;
 }
@@ -152,6 +176,7 @@ module.exports = {
   getSession,
   setSession,
   removeSession,
+  encryptWithKey,
   encrypt,
   decrypt,
   encryptFields,

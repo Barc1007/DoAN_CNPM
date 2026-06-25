@@ -2,6 +2,8 @@ const pool = require('../config/db');
 const { success, error } = require('../utils/response');
 const { encrypt, decrypt } = require('../utils/crypto');
 
+const todayDateOnly = () => new Date().toISOString().slice(0, 10);
+
 const buildGoalResponse = (goal, userId) => {
   const target = Number(decrypt(goal.target_amount, userId)) || 0;
   const current = Number(decrypt(goal.current_amount, userId)) || 0;
@@ -14,6 +16,7 @@ const buildGoalResponse = (goal, userId) => {
   return {
     ...goal,
     name: decrypt(goal.name, userId),
+    start_date: goal.start_date || goal.created_at || null,
     target_amount: target,
     current_amount: current,
     remaining_amount: remaining,
@@ -52,7 +55,7 @@ const getGoals = async (req, res, next) => {
 const createGoal = async (req, res, next) => {
   try {
     const userId = req.body.user_id || req.user.user_id;
-    const { name, target_amount, end_date, wallet_id, current_amount } = req.body;
+    const { name, target_amount, start_date, end_date, wallet_id, current_amount } = req.body;
 
     if (!name || !target_amount) {
       return error(res, 'Vui lòng nhập tên và số tiền mục tiêu', 400);
@@ -60,12 +63,13 @@ const createGoal = async (req, res, next) => {
 
     const targetAmount = Number(target_amount);
     const initialCurrent = current_amount !== undefined ? Number(current_amount) : 0;
+    const startDate = start_date || todayDateOnly();
     const status = targetAmount > 0 && initialCurrent >= targetAmount ? 'completed' : 'active';
 
     const [result] = await pool.query(
-      `INSERT INTO goals (user_id, wallet_id, name, target_amount, end_date, status, current_amount)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [userId, wallet_id || null, encrypt(name, userId), encrypt(String(targetAmount), userId), end_date || null, status, encrypt(String(initialCurrent), userId)]
+      `INSERT INTO goals (user_id, wallet_id, name, target_amount, current_amount, start_date, end_date, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [userId, wallet_id || null, encrypt(name, userId), encrypt(String(targetAmount), userId), encrypt(String(initialCurrent), userId), startDate, end_date || null, status]
     );
 
     const [rows] = await pool.query(
