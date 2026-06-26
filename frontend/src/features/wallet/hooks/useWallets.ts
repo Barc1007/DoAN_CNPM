@@ -10,11 +10,13 @@ export const useWallets = () => {
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
 
   const fetchWallets = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
+      setActionMessage(null);
       const data = await walletService.getWallets(user?.user_id);
       setWallets(data);
     } catch (err: unknown) {
@@ -30,9 +32,10 @@ export const useWallets = () => {
       try {
         await walletService.deleteWallet(walletId);
         setWallets((prev) => prev.filter((w) => w.wallet_id !== walletId));
+        setActionMessage(null);
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : "Xoá ví thất bại";
-        setError(msg);
+        setActionMessage(msg);
       }
     },
     [user?.user_id]
@@ -51,6 +54,8 @@ export const useWallets = () => {
     activeCount,
     isLoading,
     error,
+    actionMessage,
+    clearActionMessage: () => setActionMessage(null),
     refresh: fetchWallets,
     setWallets,
     deleteWallet,

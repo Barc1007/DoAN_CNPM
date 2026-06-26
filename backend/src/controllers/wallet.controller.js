@@ -35,6 +35,7 @@ const getWallets = async (req, res, next) => {
         name: decrypt(w.name, userId),
         initial_balance: initialBalance,
         current_balance: initialBalance + income - expense,
+        transaction_count: transactions.length,
       };
     }));
 
@@ -69,6 +70,7 @@ const createWallet = async (req, res, next) => {
       name: decrypt(w.name, userId),
       initial_balance: Number(decrypt(w.initial_balance, userId)) || 0,
       current_balance: Number(decrypt(w.initial_balance, userId)) || 0,
+      transaction_count: 0,
     };
 
     return success(res, response, 'Tạo ví thành công', 201);
@@ -82,6 +84,25 @@ const updateWallet = async (req, res, next) => {
     const { walletId } = req.params;
     const { name, initial_balance, wallet_type, is_active } = req.body;
     const userId = req.user.user_id;
+
+    const [walletRows] = await pool.query(
+      'SELECT wallet_id FROM wallets WHERE wallet_id = ? AND user_id = ?',
+      [walletId, userId]
+    );
+
+    if (walletRows.length === 0) {
+      return error(res, 'Không tìm thấy ví', 404);
+    }
+
+    const [transactionRows] = await pool.query(
+      'SELECT COUNT(*) AS total FROM transactions WHERE wallet_id = ?',
+      [walletId]
+    );
+    const hasTransactions = Number(transactionRows[0].total) > 0;
+
+    if (hasTransactions && initial_balance !== undefined) {
+      return error(res, 'Không thể sửa số dư ban đầu vì ví này đã có giao dịch', 400);
+    }
 
     const fields = [];
     const values = [];
@@ -97,8 +118,8 @@ const updateWallet = async (req, res, next) => {
 
     values.push(walletId);
     await pool.query(
-      `UPDATE wallets SET ${fields.join(', ')} WHERE wallet_id = ?`,
-      values
+      `UPDATE wallets SET ${fields.join(', ')} WHERE wallet_id = ? AND user_id = ?`,
+      [...values, userId]
     );
 
     const [rows] = await pool.query(
@@ -111,11 +132,29 @@ const updateWallet = async (req, res, next) => {
     }
 
     const w = rows[0];
+    const initialBalance = Number(decrypt(w.initial_balance, userId)) || 0;
+    const [updatedTransactions] = await pool.query(
+      `SELECT t.amount, c.type
+       FROM transactions t
+       JOIN categories c ON t.category_id = c.category_id
+       WHERE t.wallet_id = ?`,
+      [walletId]
+    );
+
+    let income = 0;
+    let expense = 0;
+    for (const t of updatedTransactions) {
+      const amount = Number(decrypt(t.amount, userId)) || 0;
+      if (t.type === 'income') income += amount;
+      else expense += amount;
+    }
+
     const response = {
       ...w,
       name: decrypt(w.name, userId),
-      initial_balance: Number(decrypt(w.initial_balance, userId)) || 0,
-      current_balance: Number(decrypt(w.initial_balance, userId)) || 0,
+      initial_balance: initialBalance,
+      current_balance: initialBalance + income - expense,
+      transaction_count: Number(transactionRows[0].total),
     };
 
     return success(res, response, 'Cập nhật ví thành công');
@@ -127,10 +166,29 @@ const updateWallet = async (req, res, next) => {
 const deleteWallet = async (req, res, next) => {
   try {
     const { walletId } = req.params;
+    const userId = req.user.user_id;
+
+    const [walletRows] = await pool.query(
+      'SELECT wallet_id FROM wallets WHERE wallet_id = ? AND user_id = ?',
+      [walletId, userId]
+    );
+
+    if (walletRows.length === 0) {
+      return error(res, 'Không tìm thấy ví', 404);
+    }
+
+    const [transactionRows] = await pool.query(
+      'SELECT COUNT(*) AS total FROM transactions WHERE wallet_id = ?',
+      [walletId]
+    );
+
+    if (Number(transactionRows[0].total) > 0) {
+      return error(res, 'Không thể xoá ví vì ví này đã có giao dịch', 400);
+    }
 
     const [result] = await pool.query(
-      'DELETE FROM wallets WHERE wallet_id = ?',
-      [walletId]
+      'DELETE FROM wallets WHERE wallet_id = ? AND user_id = ?',
+      [walletId, userId]
     );
 
     if (result.affectedRows === 0) {
