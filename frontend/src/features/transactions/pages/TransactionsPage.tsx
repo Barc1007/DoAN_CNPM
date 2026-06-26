@@ -27,6 +27,7 @@ const TransactionsPage = () => {
     searchQuery,
     handleFilterChange,
     handleSearchChange,
+    deleteTransaction,
     refresh,
   } = useTransactions(categoryQuery);
 
@@ -43,6 +44,10 @@ const TransactionsPage = () => {
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const [wallets, setWallets] = useState<{ wallet_id: number; name: string }[]>([]);
   const [loadingWallets, setLoadingWallets] = useState(false);
@@ -95,6 +100,7 @@ const TransactionsPage = () => {
 
   const openAddForm = () => {
     setSubmitError(null);
+    setEditingTransaction(null);
     setFormData((prev) => ({
       ...prev,
       wallet_id: prev.wallet_id || wallets[0]?.wallet_id || 0,
@@ -102,6 +108,21 @@ const TransactionsPage = () => {
       user_id: user?.user_id || 0,
       transaction_date: today,
     }));
+    setShowForm(true);
+  };
+
+  const openEditForm = (transaction: Transaction) => {
+    setSubmitError(null);
+    setEditingTransaction(transaction);
+    setFormData({
+      wallet_id: transaction.wallet_id,
+      category_id: transaction.category_id,
+      user_id: user?.user_id || transaction.user_id,
+      amount: String(transaction.amount),
+      type: String(transaction.type).toLowerCase() === "income" ? "income" : "expense",
+      transaction_date: String(transaction.transaction_date).slice(0, 10),
+      note: transaction.note || "",
+    });
     setShowForm(true);
   };
 
@@ -126,8 +147,13 @@ const TransactionsPage = () => {
         icon_name: "default",
       } as Omit<Transaction, "transaction_id">;
 
-      await transactionService.createTransaction(payload);
+      if (editingTransaction) {
+        await transactionService.updateTransaction(editingTransaction.transaction_id, payload);
+      } else {
+        await transactionService.createTransaction(payload);
+      }
       setShowForm(false);
+      setEditingTransaction(null);
       setFormData({
         wallet_id: wallets.length > 0 ? wallets[0].wallet_id : 0,
         category_id: categories.length > 0 ? categories[0].category_id : 0,
@@ -138,11 +164,32 @@ const TransactionsPage = () => {
         note: "",
       });
       refresh();
+      const list = await walletService.getWallets();
+      setWallets(list.map((w) => ({ wallet_id: w.wallet_id, name: w.name })));
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Thêm giao dịch thất bại";
       setSubmitError(msg);
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!transactionToDelete) return;
+
+    try {
+      setDeleting(true);
+      setDeleteError(null);
+      await deleteTransaction(transactionToDelete.transaction_id);
+      setTransactionToDelete(null);
+
+      const list = await walletService.getWallets();
+      setWallets(list.map((w) => ({ wallet_id: w.wallet_id, name: w.name })));
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Xoá giao dịch thất bại";
+      setDeleteError(msg);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -167,6 +214,11 @@ const TransactionsPage = () => {
           transactions={filteredTransactions}
           isLoading={isLoading}
           error={error}
+          onEdit={openEditForm}
+          onDelete={(transaction) => {
+            setDeleteError(null);
+            setTransactionToDelete(transaction);
+          }}
         />
 
         <button className={styles.fab} onClick={openAddForm}>
@@ -174,11 +226,17 @@ const TransactionsPage = () => {
         </button>
 
         {showForm && (
-          <div className={styles.overlay} onClick={() => setShowForm(false)}>
+          <div className={styles.overlay} onClick={() => {
+            setShowForm(false);
+            setEditingTransaction(null);
+          }}>
             <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
               <div className={styles.modalHeader}>
-                <h2>Thêm giao dịch</h2>
-                <button className={styles.closeBtn} onClick={() => setShowForm(false)}>
+                <h2>{editingTransaction ? "Sửa giao dịch" : "Thêm giao dịch"}</h2>
+                <button className={styles.closeBtn} onClick={() => {
+                  setShowForm(false);
+                  setEditingTransaction(null);
+                }}>
                   <X size={20} />
                 </button>
               </div>
@@ -267,12 +325,12 @@ const TransactionsPage = () => {
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label><FileText size={14} /> Ghi chú</label>
+                  <label><FileText size={14} /> Mô tả / Ghi chú</label>
                   <input
                     type="text"
                     value={formData.note}
                     onChange={(e) => setFormData({...formData, note: e.target.value})}
-                    placeholder="Nhập ghi chú..."
+                    placeholder="Nhập mô tả hoặc ghi chú..."
                   />
                 </div>
 
@@ -284,9 +342,37 @@ const TransactionsPage = () => {
                   className={styles.submitBtn} 
                   disabled={submitting || formData.wallet_id === 0 || formData.category_id === 0 || !formData.amount}
                 >
-                  {submitting ? "Đang lưu..." : "Thêm giao dịch"}
+                  {submitting ? "Đang lưu..." : editingTransaction ? "Lưu thay đổi" : "Thêm giao dịch"}
                 </button>
               </form>
+            </div>
+          </div>
+        )}
+
+        {transactionToDelete && (
+          <div className={styles.overlay} onClick={() => setTransactionToDelete(null)}>
+            <div className={styles.confirmModal} onClick={(e) => e.stopPropagation()}>
+              <div className={styles.confirmIcon}>!</div>
+              <h2>Xoá giao dịch?</h2>
+              {deleteError && <p className={styles.confirmError}>{deleteError}</p>}
+              <div className={styles.confirmActions}>
+                <button
+                  type="button"
+                  className={styles.cancelDeleteBtn}
+                  onClick={() => setTransactionToDelete(null)}
+                  disabled={deleting}
+                >
+                  Huỷ
+                </button>
+                <button
+                  type="button"
+                  className={styles.confirmDeleteBtn}
+                  onClick={handleConfirmDelete}
+                  disabled={deleting}
+                >
+                  {deleting ? "Đang xoá..." : "Xoá giao dịch"}
+                </button>
+              </div>
             </div>
           </div>
         )}

@@ -91,3 +91,29 @@
 .amountExpense {
   color: #ef4444;
 }
+
+.editButton,
+.deleteButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #9ca3af;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.editButton:hover {
+  background: #ecfeff;
+  color: #0891b2;
+}
+
+.deleteButton:hover {
+  background: #fef2f2;
+  color: #ef4444;
+}

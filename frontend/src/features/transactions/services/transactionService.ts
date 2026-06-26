@@ -44,6 +44,35 @@ export const transactionService = {
     return response;
   },
 
+  updateTransaction: async (
+    transactionId: number,
+    payload: Partial<Omit<Transaction, "transaction_id" | "user_id" | "category_name" | "icon_name">>
+  ): Promise<Transaction> => {
+    if (IS_MOCK) {
+      const { MOCK_TRANSACTIONS } = await import("../../../data/mockTransactions");
+      await new Promise((resolve) => setTimeout(resolve, 700));
+      const index = MOCK_TRANSACTIONS.findIndex((t) => t.transaction_id === transactionId);
+      if (index === -1) throw new Error("Không tìm thấy giao dịch");
+      MOCK_TRANSACTIONS[index] = { ...MOCK_TRANSACTIONS[index], ...payload };
+      return MOCK_TRANSACTIONS[index];
+    }
+
+    return apiClient.put<unknown, Transaction>(`/transactions/${transactionId}`, payload);
+  },
+
+  deleteTransaction: async (transactionId: number): Promise<void> => {
+    if (IS_MOCK) {
+      const { MOCK_TRANSACTIONS } = await import("../../../data/mockTransactions");
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      const index = MOCK_TRANSACTIONS.findIndex((t) => t.transaction_id === transactionId);
+      if (index === -1) throw new Error("Không tìm thấy giao dịch");
+      MOCK_TRANSACTIONS.splice(index, 1);
+      return;
+    }
+
+    await apiClient.delete(`/transactions/${transactionId}`);
+  },
+
   calculateSummaryStats: (transactions: Transaction[]): TransactionStats => {
     const now = new Date();
     const currentYear = now.getFullYear();

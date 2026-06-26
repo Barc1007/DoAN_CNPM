@@ -9,6 +9,7 @@ export const useTransactions = (initialSearchQuery = "") => {
   const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   // Filter & Search state
   const [filterType, setFilterType] = useState<FilterType>("ALL");
@@ -19,6 +20,7 @@ export const useTransactions = (initialSearchQuery = "") => {
     try {
       setIsLoading(true);
       setError(null);
+      setActionError(null);
       const response = await transactionService.getTransactions(user?.user_id);
       setAllTransactions(response);
     } catch (err: unknown) {
@@ -60,16 +62,30 @@ export const useTransactions = (initialSearchQuery = "") => {
   // ── Handlers ──────────────────────────────────────────────────────────────
   const handleFilterChange = (type: FilterType) => setFilterType(type);
   const handleSearchChange = (query: string) => setSearchQuery(query);
+  const deleteTransaction = async (transactionId: number) => {
+    try {
+      setActionError(null);
+      await transactionService.deleteTransaction(transactionId);
+      setAllTransactions((prev) => prev.filter((t) => t.transaction_id !== transactionId));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Xoá giao dịch thất bại";
+      setActionError(message);
+      throw err;
+    }
+  };
 
   return {
     filteredTransactions,
     stats,
     isLoading,
     error,
+    actionError,
+    clearActionError: () => setActionError(null),
     filterType,
     searchQuery,
     handleFilterChange,
     handleSearchChange,
+    deleteTransaction,
     refresh: fetchTransactions,
   };
 };

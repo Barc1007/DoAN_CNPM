@@ -8,12 +8,16 @@ interface TransactionListProps {
   transactions: Transaction[];
   isLoading: boolean;
   error: string | null;
+  onEdit?: (transaction: Transaction) => void;
+  onDelete?: (transaction: Transaction) => void;
 }
 
 const TransactionList: React.FC<TransactionListProps> = ({
   transactions,
   isLoading,
   error,
+  onEdit,
+  onDelete,
 }) => {
   if (isLoading) {
     return (
@@ -47,6 +51,8 @@ const TransactionList: React.FC<TransactionListProps> = ({
         <TransactionItem
           key={transaction.transaction_id}
           transaction={transaction}
+          onEdit={onEdit}
+          onDelete={onDelete}
         />
       ))}
     </div>
