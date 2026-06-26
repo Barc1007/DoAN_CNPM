@@ -46,6 +46,7 @@ const formatDate = (dateStr: string): string => {
 const TransactionItem: React.FC<TransactionItemProps> = ({ transaction }) => {
   const isIncome = String(transaction.type).toLowerCase() === "income";
   const IconComponent = ICON_MAP[transaction.icon_name] ?? HelpCircle;
+  const title = transaction.note?.trim() || transaction.category_name || "Giao dịch";
 
   return (
     <div className={styles.item}>
@@ -60,7 +61,7 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ transaction }) => {
 
       {/* Info */}
       <div className={styles.info}>
-        <p className={styles.categoryName}>{transaction.note}</p>
+        <p className={styles.categoryName}>{title}</p>
         <p className={styles.meta}>
           <span className={styles.category}>{transaction.category_name}</span>
           <span className={styles.dot}>•</span>

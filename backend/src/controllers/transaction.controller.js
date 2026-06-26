@@ -2,6 +2,20 @@ const pool = require('../config/db');
 const { success, error } = require('../utils/response');
 const { encrypt, decrypt } = require('../utils/crypto');
 
+const isEncryptedValue = (value) => (
+  typeof value === 'string' && /^[a-f0-9]{32}:[a-f0-9]+$/i.test(value)
+);
+
+const decryptText = (value, userId) => {
+  const decrypted = decrypt(value, userId);
+  return isEncryptedValue(decrypted) ? '' : decrypted;
+};
+
+const decryptAmount = (value, userId) => {
+  const decrypted = decrypt(value, userId);
+  return isEncryptedValue(decrypted) ? null : Number(decrypted) || 0;
+};
+
 const getTransactions = async (req, res, next) => {
   try {
     const userId = req.user.user_id;
@@ -13,8 +27,8 @@ const getTransactions = async (req, res, next) => {
 
     const result = rows.map((t) => ({
       ...t,
-      amount: Number(decrypt(t.amount, userId)) || 0,
-      note: decrypt(t.note, userId) || '',
+      amount: decryptAmount(t.amount, userId) ?? 0,
+      note: decryptText(t.note, userId) || '',
     }));
 
     return success(res, result);
@@ -54,8 +68,8 @@ const createTransaction = async (req, res, next) => {
 
     const response = {
       ...rows[0],
-      amount: Number(decrypt(rows[0].amount, userId)) || 0,
-      note: decrypt(rows[0].note, userId) || '',
+      amount: decryptAmount(rows[0].amount, userId) ?? 0,
+      note: decryptText(rows[0].note, userId) || '',
     };
 
     return success(res, response, 'Tạo giao dịch thành công', 201);
@@ -109,8 +123,8 @@ const updateTransaction = async (req, res, next) => {
 
     const response = {
       ...rows[0],
-      amount: Number(decrypt(rows[0].amount, userId)) || 0,
-      note: decrypt(rows[0].note, userId) || '',
+      amount: decryptAmount(rows[0].amount, userId) ?? 0,
+      note: decryptText(rows[0].note, userId) || '',
     };
 
     return success(res, response, 'Cập nhật giao dịch thành công');

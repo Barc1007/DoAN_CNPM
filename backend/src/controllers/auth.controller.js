@@ -13,6 +13,49 @@ const getGoogleClient = () => new OAuth2Client(
   process.env.GOOGLE_CALLBACK_URL
 );
 
+const redirectGoogleFailure = (res, reason = 'google_auth_failed') => {
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const params = new URLSearchParams({ error: reason });
+  return res.redirect(`${frontendUrl}/auth/callback?${params.toString()}`);
+};
+
+const normalizeEmail = (email) => String(email || '').trim().toLowerCase();
+
+const hashEmail = (email) => {
+  const normalizedEmail = normalizeEmail(email);
+  if (!normalizedEmail) return null;
+  return crypto.createHash('sha256').update(normalizedEmail).digest('hex');
+};
+
+const looksLikeEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || ''));
+
+const createAccountSecret = () => crypto.randomBytes(32).toString('hex');
+
+const getAuthProviderAfterGoogleLink = (currentProvider) => {
+  if (currentProvider === 'local' || currentProvider === 'both') return 'both';
+  return 'google';
+};
+
+const signUserToken = (user) => jwt.sign(
+  { user_id: user.user_id, username: user.username },
+  process.env.JWT_SECRET,
+  { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+);
+
+const buildUserData = (user, token, fallback = {}) => {
+  const decryptedFullName = decrypt(user.full_name, user.user_id);
+  const decryptedEmail = decrypt(user.email, user.user_id);
+
+  return {
+    user_id: user.user_id,
+    username: user.username,
+    email: looksLikeEmail(decryptedEmail) ? decryptedEmail : fallback.email,
+    full_name: decryptedFullName || fallback.full_name,
+    auth_provider: user.auth_provider,
+    token,
+  };
+};
+
 const SALT_ROUNDS = 10;
 const DEFAULT_CATEGORIES = [
   ['Ăn uống', 'expense'],
@@ -101,36 +144,49 @@ const reEncryptUserData = async (userId, newEncryptionKey) => {
 const register = async (req, res, next) => {
   try {
     const { full_name, username, email, password } = req.body;
+    const normalizedEmail = normalizeEmail(email);
+    const emailLookup = hashEmail(normalizedEmail);
 
-    if (!full_name || !username || !email || !password) {
+    if (!full_name || !username || !normalizedEmail || !password) {
       return error(res, 'Vui lòng điền đầy đủ thông tin', 400);
     }
 
     const [existing] = await pool.query(
-      'SELECT user_id FROM users WHERE username = ?',
-      [username]
+      'SELECT user_id FROM users WHERE username = ? OR email_lookup = ?',
+      [username, emailLookup]
     );
 
     if (existing.length > 0) {
       return error(res, 'Tên đăng nhập hoặc email đã tồn tại', 409);
     }
 
-    const { authenticationSecret, encryptionKey } = deriveKeyFromPassword(password);
+    const accountSecret = createAccountSecret();
+    const { encryptionKey } = deriveKeyFromPassword(accountSecret);
+    const { authenticationSecret } = deriveKeyFromPassword(password);
     const hashedPassword = await bcrypt.hash(authenticationSecret, SALT_ROUNDS);
 
     const [result] = await pool.query(
-      'INSERT INTO users (full_name, username, email, password) VALUES (?, ?, ?, ?)',
-      [encryptWithKey(full_name, encryptionKey), username, encryptWithKey(email, encryptionKey), hashedPassword]
+      `INSERT INTO users (full_name, username, email, email_lookup, password, auth_provider, google_secret)
+       VALUES (?, ?, ?, ?, ?, 'local', ?)`,
+      [
+        encryptWithKey(full_name, encryptionKey),
+        username,
+        encryptWithKey(normalizedEmail, encryptionKey),
+        emailLookup,
+        hashedPassword,
+        accountSecret,
+      ]
     );
 
-    setSession(result.insertId, { key: encryptionKey, password });
+    setSession(result.insertId, { key: encryptionKey, password: accountSecret });
     await ensureDefaultCategories();
 
     const newUser = {
       user_id: result.insertId,
       username,
-      email: email,
+      email: normalizedEmail,
       full_name: full_name,
+      auth_provider: 'local',
     };
 
     return success(res, newUser, 'Đăng ký thành công', 201);
@@ -158,6 +214,10 @@ const login = async (req, res, next) => {
 
     const user = rows[0];
 
+    if (!user.password) {
+      return error(res, 'Tài khoản này đăng nhập bằng Google. Vui lòng dùng Google để đăng nhập.', 401);
+    }
+
     const { authenticationSecret, encryptionKey } = deriveKeyFromPassword(password);
     let isMatch = await bcrypt.compare(authenticationSecret, user.password);
     const isLegacyPasswordHash = !isMatch && await bcrypt.compare(password, user.password);
@@ -175,27 +235,49 @@ const login = async (req, res, next) => {
       );
     }
 
-    const token = jwt.sign(
-      { user_id: user.user_id, username: user.username },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
-    );
+    let currentUser = user;
 
     setSession(user.user_id, { key: encryptionKey, password });
+
+    const decryptedEmailWithPassword = decrypt(user.email, user.user_id);
+    const canDecryptWithPassword = looksLikeEmail(decryptedEmailWithPassword);
+    let accountSecret = user.google_secret;
+
+    if (!accountSecret) {
+      accountSecret = createAccountSecret();
+    }
+
+    const { encryptionKey: accountKey } = deriveKeyFromPassword(accountSecret);
+
+    setSession(user.user_id, { key: accountKey, password: accountSecret });
+    const decryptedEmailWithAccountKey = decrypt(user.email, user.user_id);
+    const needsReEncrypt = canDecryptWithPassword && !looksLikeEmail(decryptedEmailWithAccountKey);
+
+    if (needsReEncrypt) {
+      setSession(user.user_id, { key: encryptionKey, password });
+      await reEncryptUserData(user.user_id, accountKey);
+      setSession(user.user_id, { key: accountKey, password: accountSecret });
+    }
+
+    const nextEmailLookup = canDecryptWithPassword
+      ? hashEmail(decryptedEmailWithPassword)
+      : user.email_lookup;
+
+    if (!user.google_secret || !user.email_lookup || needsReEncrypt) {
+      await pool.query(
+        'UPDATE users SET google_secret = ?, email_lookup = COALESCE(email_lookup, ?) WHERE user_id = ?',
+        [accountSecret, nextEmailLookup, user.user_id]
+      );
+
+      const [updatedRows] = await pool.query('SELECT * FROM users WHERE user_id = ?', [user.user_id]);
+      currentUser = updatedRows[0];
+    }
+
+    const token = signUserToken(currentUser);
+
     await ensureDefaultCategories();
 
-    // Decrypt user fields (support both old CryptoJS and new AES format)
-    const fullName = decrypt(user.full_name, user.user_id);
-    const email = decrypt(user.email, user.user_id);
-
-    const userData = {
-      user_id: user.user_id,
-      username: user.username,
-      email: email,
-      full_name: fullName,
-    };
-
-    return success(res, { ...userData, token }, 'Đăng nhập thành công');
+    return success(res, buildUserData(currentUser, token), 'Đăng nhập thành công');
   } catch (err) {
     next(err);
   }
@@ -215,12 +297,16 @@ const changePassword = async (req, res, next) => {
     }
 
     const [rows] = await pool.query(
-      'SELECT password FROM users WHERE user_id = ?',
+      'SELECT password, email, google_secret FROM users WHERE user_id = ?',
       [userId]
     );
 
     if (rows.length === 0) {
       return error(res, 'Không tìm thấy người dùng', 404);
+    }
+
+    if (!rows[0].password) {
+      return error(res, 'Tài khoản Google không có mật khẩu để thay đổi', 400);
     }
 
     const {
@@ -240,16 +326,37 @@ const changePassword = async (req, res, next) => {
       encryptionKey: newEncryptionKey,
     } = deriveKeyFromPassword(new_password);
 
-    setSession(userId, { key: currentEncryptionKey, password: current_password });
-    await reEncryptUserData(userId, newEncryptionKey);
-
     const hashedPassword = await bcrypt.hash(newAuthenticationSecret, SALT_ROUNDS);
+    let sessionKey;
+    let sessionPassword;
+
+    if (rows[0].google_secret) {
+      const { encryptionKey: accountKey } = deriveKeyFromPassword(rows[0].google_secret);
+      sessionKey = accountKey;
+      sessionPassword = rows[0].google_secret;
+    } else {
+      setSession(userId, { key: currentEncryptionKey, password: current_password });
+
+      const decryptedEmail = decrypt(rows[0].email, userId);
+      const accountSecret = createAccountSecret();
+      const { encryptionKey: accountKey } = deriveKeyFromPassword(accountSecret);
+
+      await reEncryptUserData(userId, accountKey);
+      await pool.query(
+        'UPDATE users SET google_secret = ?, email_lookup = COALESCE(email_lookup, ?) WHERE user_id = ?',
+        [accountSecret, looksLikeEmail(decryptedEmail) ? hashEmail(decryptedEmail) : null, userId]
+      );
+
+      sessionKey = accountKey;
+      sessionPassword = accountSecret;
+    }
+
     await pool.query(
       'UPDATE users SET password = ? WHERE user_id = ?',
       [hashedPassword, userId]
     );
 
-    setSession(userId, { key: newEncryptionKey, password: new_password });
+    setSession(userId, { key: sessionKey, password: sessionPassword });
 
     return success(res, null, 'Đổi mật khẩu thành công');
   } catch (err) {
@@ -275,7 +382,7 @@ const googleCallback = async (req, res, next) => {
     const { code } = req.query;
 
     if (!code) {
-      return res.redirect(`${process.env.FRONTEND_URL}/login?error=google_auth_failed`);
+      return redirectGoogleFailure(res, 'missing_google_code');
     }
 
     const client = getGoogleClient();
@@ -294,9 +401,20 @@ const googleCallback = async (req, res, next) => {
     });
 
     const payload = ticket.getPayload();
-    const { sub: googleId, email, name: fullName, picture } = payload;
+    const {
+      sub: googleId,
+      email,
+      email_verified: emailVerified,
+      name: fullName,
+      picture,
+    } = payload;
+    const normalizedEmail = normalizeEmail(email);
+    const emailLookup = hashEmail(normalizedEmail);
 
-    // Kiểm tra user đã tồn tại chưa (theo google_id hoặc email)
+    if (!googleId || !normalizedEmail || emailVerified === false) {
+      return redirectGoogleFailure(res, 'invalid_google_profile');
+    }
+
     const [existingByGoogleId] = await pool.query(
       'SELECT * FROM users WHERE google_id = ?',
       [googleId]
@@ -306,80 +424,102 @@ const googleCallback = async (req, res, next) => {
     let encryptionKey;
 
     if (existingByGoogleId.length > 0) {
-      // User đã tồn tại → đăng nhập bình thường
       user = existingByGoogleId[0];
-      const { encryptionKey: key } = deriveKeyFromPassword(user.google_secret);
-      encryptionKey = key;
-    } else {
-      // Kiểm tra email đã tồn tại với tài khoản local chưa
-      const [existingByEmail] = await pool.query(
-        'SELECT * FROM users WHERE email = ? AND auth_provider = "local"',
-        [encryptWithKey(email, deriveKeyFromPassword('temp').encryptionKey)]
-      );
 
-      // Tạo random secret để derive encryption key (thay thế password cho Google users)
-      const googleSecret = crypto.randomBytes(32).toString('hex');
-      const { encryptionKey: key } = deriveKeyFromPassword(googleSecret);
-      encryptionKey = key;
-
-      // Tạo username duy nhất từ email
-      const baseUsername = email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '') || 'user';
-      let username = baseUsername;
-      let suffix = 1;
-      while (true) {
-        const [taken] = await pool.query('SELECT user_id FROM users WHERE username = ?', [username]);
-        if (taken.length === 0) break;
-        username = `${baseUsername}${suffix++}`;
+      if (!user.google_secret) {
+        const accountSecret = createAccountSecret();
+        await pool.query(
+          'UPDATE users SET google_secret = ?, email_lookup = COALESCE(email_lookup, ?) WHERE user_id = ?',
+          [accountSecret, emailLookup, user.user_id]
+        );
+        user.google_secret = accountSecret;
+        user.email_lookup = user.email_lookup || emailLookup;
       }
-
-      // Tạo user mới
-      const [result] = await pool.query(
-        `INSERT INTO users (full_name, username, email, password, google_id, auth_provider, google_secret)
-         VALUES (?, ?, ?, NULL, ?, 'google', ?)`,
-        [
-          encryptWithKey(fullName, encryptionKey),
-          username,
-          encryptWithKey(email, encryptionKey),
-          googleId,
-          googleSecret,
-        ]
+    } else {
+      const [existingByEmail] = await pool.query(
+        'SELECT * FROM users WHERE email_lookup = ?',
+        [emailLookup]
       );
 
-      const [newUser] = await pool.query('SELECT * FROM users WHERE user_id = ?', [result.insertId]);
-      user = newUser[0];
+      if (existingByEmail.length > 0) {
+        user = existingByEmail[0];
 
-      await ensureDefaultCategories();
+        if (user.google_id && user.google_id !== googleId) {
+          return redirectGoogleFailure(res, 'email_linked_to_other_google');
+        }
+
+        const accountSecret = user.google_secret || createAccountSecret();
+        await pool.query(
+          `UPDATE users
+           SET google_id = ?,
+               google_secret = ?,
+               auth_provider = ?
+           WHERE user_id = ?`,
+          [
+            googleId,
+            accountSecret,
+            getAuthProviderAfterGoogleLink(user.auth_provider),
+            user.user_id,
+          ]
+        );
+
+        const [updatedRows] = await pool.query('SELECT * FROM users WHERE user_id = ?', [user.user_id]);
+        user = updatedRows[0];
+      } else {
+        const accountSecret = createAccountSecret();
+        const { encryptionKey: accountKey } = deriveKeyFromPassword(accountSecret);
+
+        const baseUsername = normalizedEmail.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '') || 'user';
+        let username = baseUsername;
+        let suffix = 1;
+        while (true) {
+          const [taken] = await pool.query('SELECT user_id FROM users WHERE username = ?', [username]);
+          if (taken.length === 0) break;
+          username = `${baseUsername}${suffix++}`;
+        }
+
+        const [result] = await pool.query(
+          `INSERT INTO users (full_name, username, email, email_lookup, password, google_id, auth_provider, google_secret)
+           VALUES (?, ?, ?, ?, NULL, ?, 'google', ?)`,
+          [
+            encryptWithKey(fullName || normalizedEmail, accountKey),
+            username,
+            encryptWithKey(normalizedEmail, accountKey),
+            emailLookup,
+            googleId,
+            accountSecret,
+          ]
+        );
+
+        const [newUser] = await pool.query('SELECT * FROM users WHERE user_id = ?', [result.insertId]);
+        user = newUser[0];
+
+        await ensureDefaultCategories();
+      }
     }
 
-    // Set session cho encryption
+    const { encryptionKey: accountKey } = deriveKeyFromPassword(user.google_secret);
+    encryptionKey = accountKey;
+
     setSession(user.user_id, { key: encryptionKey, password: user.google_secret });
 
-    // Ký JWT
-    const token = jwt.sign(
-      { user_id: user.user_id, username: user.username },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
-    );
+    if (!user.email_lookup) {
+      await pool.query('UPDATE users SET email_lookup = ? WHERE user_id = ?', [emailLookup, user.user_id]);
+      user.email_lookup = emailLookup;
+    }
 
-    // Decrypt thông tin để gửi về frontend
-    const decryptedFullName = decrypt(user.full_name, user.user_id);
-    const decryptedEmail = decrypt(user.email, user.user_id);
+    const token = signUserToken(user);
+    const userData = buildUserData(user, token, {
+      email: normalizedEmail,
+      full_name: fullName || normalizedEmail,
+      picture,
+    });
 
-    const userData = {
-      user_id: user.user_id,
-      username: user.username,
-      email: decryptedEmail,
-      full_name: decryptedFullName,
-      auth_provider: user.auth_provider,
-      token,
-    };
-
-    // Redirect về frontend với token trong query param
     const params = new URLSearchParams({ token: JSON.stringify(userData) });
-    return res.redirect(`${process.env.FRONTEND_URL}/auth/callback?${params.toString()}`);
+    return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/auth/callback?${params.toString()}`);
   } catch (err) {
     console.error('Google OAuth error:', err);
-    return res.redirect(`${process.env.FRONTEND_URL}/login?error=google_auth_failed`);
+    return redirectGoogleFailure(res);
   }
 };
 
