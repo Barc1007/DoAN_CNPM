@@ -1,0 +1,116 @@
+.sidebar {
+  width: 260px;
+  height: 100vh;
+  background-color: var(--color-white);
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 0;
+  position: fixed;
+  left: 0;
+  top: 0;
+}
+
+.logoContainer {
+  padding: 0 24px 32px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logoIcon {
+  color: var(--color-primary);
+  background: #f0fdfa;
+  padding: 8px;
+  border-radius: 12px;
+}
+
+.logoText {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text-main);
+}
+
+.logoSub {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  display: block;
+}
+
+.nav {
+  flex: 1;
+  padding: 0 12px;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  transition: all 0.2s;
+  margin-bottom: 4px;
+}
+
+.navItem:hover {
+  background-color: var(--color-bg);
+  color: var(--color-text-main);
+}
+
+.active {
+  background-color: var(--color-primary-light);
+  color: var(--color-white);
+}
+
+.active:hover {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+.profileCard {
+  margin: 16px;
+  padding: 12px;
+  background-color: var(--color-bg);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  background-color: #fb923c;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.profileInfo {
+  flex: 1;
+}
+
+.profileName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+.profileEmail {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.logoutBtn {
+  color: var(--color-text-muted);
+  padding: 4px;
+}

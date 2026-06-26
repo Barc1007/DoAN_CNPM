@@ -1,0 +1,114 @@
+.container {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.9fr) minmax(0, 2fr);
+  gap: 14px;
+}
+
+.primaryCard,
+.metricCard {
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.primaryCard {
+  min-height: 112px;
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.primaryIcon,
+.metricIcon {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.primaryIcon {
+  background: #ecfdf5;
+  color: var(--color-primary-dark);
+}
+
+.label {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.primaryValue {
+  display: block;
+  color: var(--color-text-main);
+  font-size: 26px;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.meta {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  margin: 5px 0 0;
+}
+
+.metricList {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.metricCard {
+  min-height: 112px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.metricValue {
+  display: block;
+  color: var(--color-text-main);
+  font-size: 18px;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.budget .metricIcon {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.safe .metricIcon {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.warning .metricIcon {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.danger .metricIcon {
+  background: #fff1f2;
+  color: #be123c;
+}
+
+@media (max-width: 1100px) {
+  .container,
+  .metricList {
+    grid-template-columns: 1fr;
+  }
+
+  .primaryValue {
+    white-space: normal;
+  }
+}

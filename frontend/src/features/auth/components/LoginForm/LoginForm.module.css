@@ -1,0 +1,223 @@
+.container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 3rem 4rem;
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.logoRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+
+.logoIcon {
+  width: 48px;
+  height: 48px;
+  background: white;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.logoSvg {
+  width: 32px;
+  height: 32px;
+}
+
+.brandTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  color: #2D3748;
+}
+
+.brandSubtitle {
+  font-size: 0.85rem;
+  color: #718096;
+  margin: 0;
+}
+
+.header {
+  margin-bottom: 2rem;
+}
+
+.header h2 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #2D3748;
+  margin-bottom: 0.5rem;
+}
+
+.header p {
+  color: #718096;
+  font-size: 1rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.error {
+  background: #FFF5F5;
+  color: #E53E3E;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.inputGroup label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #4A5568;
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 1.2rem;
+  color: #A0AEC0;
+}
+
+.input {
+  width: 100%;
+  padding: 1rem 1rem 1rem 3.2rem;
+  border: 1px solid #E2E8F0;
+  border-radius: 2rem;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.input:focus {
+  border-color: #4ECDC4;
+  box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.1);
+}
+
+.eyeButton {
+  position: absolute;
+  right: 1.2rem;
+  background: none;
+  border: none;
+  color: #A0AEC0;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.eyeButton:hover {
+  color: #4A5568;
+}
+
+.actionsRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.rememberRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #4A5568;
+  cursor: pointer;
+}
+
+.rememberRow input[type="checkbox"] {
+  accent-color: #4ECDC4;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.forgotLink {
+  color: #4ECDC4;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.forgotLink:hover {
+  color: #38B2AC;
+}
+
+.submitBtn {
+  background: linear-gradient(135deg, #4ECDC4 0%, #FFE66D 100%);
+  color: white;
+  border: none;
+  padding: 1rem;
+  border-radius: 2rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(78, 205, 196, 0.2);
+  margin-top: 0.5rem;
+}
+
+.submitBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(78, 205, 196, 0.3);
+}
+
+.submitBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.registerPrompt {
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 0.95rem;
+  color: #718096;
+}
+
+.registerPrompt a {
+  color: #4ECDC4;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.registerPrompt a:hover {
+  text-decoration: underline;
+}
+
+.demoNote {
+  margin-top: 3rem;
+  padding: 1rem;
+  background: #E6FFFA;
+  border-radius: 0.5rem;
+  color: #319795;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .container {
+    padding: 2rem;
+  }
+}

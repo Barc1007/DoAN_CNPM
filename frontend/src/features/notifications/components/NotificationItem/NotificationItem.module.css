@@ -1,0 +1,124 @@
+.itemContainer {
+  display: flex;
+  align-items: flex-start;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  margin-bottom: 16px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.itemContainer:hover {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+}
+
+.unreadItem {
+  background-color: #f0fdfa; /* Light teal background for unread */
+  border-color: #99f6e4;
+}
+
+.iconContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  margin-right: 16px;
+}
+
+.iconWarning {
+  background-color: #ffedd5;
+  color: #f97316;
+}
+
+.iconReminder {
+  background-color: #e0e7ff;
+  color: #6366f1;
+}
+
+.iconSystem {
+  background-color: #dcfce7;
+  color: #22c55e;
+}
+
+.contentContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.message {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.dot {
+  margin: 0 8px;
+}
+
+.typeLabel {
+  font-weight: 500;
+}
+
+.actionsContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: 16px;
+}
+
+.actionButton {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.checkIcon {
+  color: #14b8a6; /* Teal color */
+}
+
+.actionButton:hover .checkIcon {
+  color: #0f766e;
+}
+
+.actionButton:hover:has(.checkIcon) {
+  background-color: #ccfbf1;
+}
+
+.deleteIcon {
+  color: #94a3b8;
+}
+
+.actionButton:hover .deleteIcon {
+  color: #ef4444;
+}
+
+.actionButton:hover:has(.deleteIcon) {
+  background-color: #fee2e2;
+}

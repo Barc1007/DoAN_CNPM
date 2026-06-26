@@ -1,0 +1,205 @@
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 25px rgba(0,0,0,0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.teal {
+  border-top: 4px solid #14b8a6;
+}
+.coral {
+  border-top: 4px solid #f43f5e;
+}
+.yellow {
+  border-top: 4px solid #f59e0b;
+}
+.violet {
+  border-top: 4px solid #8b5cf6;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.iconBox {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.teal .iconBox {
+  background: #14b8a6;
+}
+.coral .iconBox {
+  background: #f43f5e;
+}
+.yellow .iconBox {
+  background: #f59e0b;
+}
+.violet .iconBox {
+  background: #8b5cf6;
+}
+
+.header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.header p {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.progressHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.progressHeader strong {
+  color: #0f172a;
+}
+
+.track {
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.fill {
+  height: 100%;
+  background: #6366f1;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.teal .fill {
+  background: #14b8a6;
+}
+.coral .fill {
+  background: #f43f5e;
+}
+.yellow .fill {
+  background: #f59e0b;
+}
+.violet .fill {
+  background: #8b5cf6;
+}
+
+.amounts {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.amounts strong {
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.amounts span {
+  font-size: 14px;
+  color: #64748b;
+  text-decoration: line-through;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.footer > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.metaLabel {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.footer strong {
+  font-size: 14px;
+  color: #0f172a;
+}
+
+.footer small {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.remaining {
+  color: #f59e0b;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.actionBtn {
+  flex: 1;
+  padding: 6px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  color: #334155;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.actionBtn:hover {
+  background: #f8fafc;
+  border-color: #6366f1;
+  color: #6366f1;
+}
+
+.actionBtnDelete {
+  flex: 1;
+  padding: 6px;
+  border: 1px solid #fecaca;
+  background: white;
+  color: #ef4444;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.actionBtnDelete:hover {
+  background: #fef2f2;
+}

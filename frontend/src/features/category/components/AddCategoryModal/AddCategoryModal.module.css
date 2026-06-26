@@ -1,0 +1,21 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+}
+.modal {
+  background: white;
+  padding: 16px;
+  border-radius: 8px;
+  width: 320px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+}
+.row { margin-bottom: 12px; }
+.row label { display:block; font-size: 12px; color: #333; margin-bottom:6px; }
+.row input, .row select { width:100%; padding:8px; border:1px solid #ddd; border-radius:4px }
+.actions { display:flex; gap:8px; justify-content:flex-end }
+.error { color: #b91c1c; margin-bottom:8px }
