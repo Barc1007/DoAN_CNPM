@@ -17,11 +17,11 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
 }) => {
   const getIconConfig = () => {
     switch (notification.type) {
-      case 'WARNING':
+      case 'budget_alert':
         return { icon: <AlertTriangle size={24} />, className: styles.iconWarning, label: 'Cảnh Báo Ngân Sách' };
-      case 'REMINDER':
+      case 'daily_reminder':
         return { icon: <Bell size={24} />, className: styles.iconReminder, label: 'Nhắc Nhở Hàng Ngày' };
-      case 'SYSTEM':
+      case 'system':
         return { icon: <Info size={24} />, className: styles.iconSystem, label: 'Hệ Thống' };
       default:
         return { icon: <Info size={24} />, className: styles.iconSystem, label: 'Hệ Thống' };

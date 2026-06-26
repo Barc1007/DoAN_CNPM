@@ -83,7 +83,7 @@ const LoginForm: React.FC = () => {
             />
             <span>Ghi nhớ đăng nhập</span>
           </label>
-          <a href="#" className={styles.forgotLink}>Quên mật khẩu?</a>
+          <Link to="/forgot-password" className={styles.forgotLink}>Quên mật khẩu?</Link>
         </div>
 
         <button id="login-submit-btn" type="submit" className={styles.submitBtn} disabled={loading}>

@@ -4,7 +4,8 @@ const crypto = require('crypto');
 const { OAuth2Client } = require('google-auth-library');
 const pool = require('../config/db');
 const { success, error } = require('../utils/response');
-const { deriveKeyFromPassword, setSession, encryptWithKey, decrypt } = require('../utils/crypto');
+const { deriveKeyFromPassword, setSession, removeSession, encryptWithKey, decrypt } = require('../utils/crypto');
+const { sendOtpEmail } = require('../services/mailer');
 
 // Lazy getter: đảm bảo đọc env SAU khi dotenv.config() đã chạy
 const getGoogleClient = () => new OAuth2Client(
@@ -523,5 +524,215 @@ const googleCallback = async (req, res, next) => {
   }
 };
 
-module.exports = { register, login, changePassword, googleAuth, googleCallback };
+// ─── Password Reset ──────────────────────────────────────────────────────────
+
+const OTP_VALID_MINUTES = 10;
+const OTP_MAX_ATTEMPTS = 5;
+const OTP_RATE_LIMIT_SECONDS = 60;
+const RESET_TOKEN_EXPIRES_MINUTES = 10;
+
+const hashOtp = (otp) => crypto.createHash('sha256').update(otp).digest('hex');
+
+const generateOtp = () => {
+  let otp = '';
+  for (let i = 0; i < 6; i++) otp += Math.floor(Math.random() * 10);
+  return otp;
+};
+
+const signResetToken = (userId) =>
+  jwt.sign({ user_id: userId, purpose: 'password_reset' }, process.env.JWT_SECRET, {
+    expiresIn: `${RESET_TOKEN_EXPIRES_MINUTES}m`,
+  });
+
+const forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    const normalizedEmail = normalizeEmail(email);
+
+    if (!normalizedEmail || !looksLikeEmail(normalizedEmail)) {
+      return error(res, 'Email khong hop le', 400);
+    }
+
+    const emailLookup = hashEmail(normalizedEmail);
+    const [rows] = await pool.query(
+      // FIX 1: Lấy thêm google_secret để giải mã full_name
+      'SELECT user_id, full_name, google_secret FROM users WHERE email_lookup = ?',
+      [emailLookup]
+    );
+
+    if (rows.length === 0) {
+      return success(res, null, 'Neu email ton tai, chung toi da gui ma xac minh');
+    }
+
+    const user = rows[0];
+    const userId = user.user_id;
+
+    // FIX 2: Dùng rate-limit đúng — chặn nếu yêu cầu trước đó trong vòng 60 giây
+    const [recent] = await pool.query(
+      `SELECT reset_id FROM password_resets
+       WHERE user_id = ? AND created_at > DATE_SUB(NOW(), INTERVAL 60 SECOND)
+       ORDER BY created_at DESC LIMIT 1`,
+      [userId]
+    );
+    if (recent.length > 0) {
+      return error(res, 'Vui long cho 60 giay truoc khi yeu cau gui lai ma', 429);
+    }
+
+    // Xoa OTP cu
+    await pool.query('DELETE FROM password_resets WHERE user_id = ?', [userId]);
+
+    const otp = generateOtp();
+    const otpHash = hashOtp(otp);
+    const expiresAt = new Date(Date.now() + OTP_VALID_MINUTES * 60 * 1000);
+
+    await pool.query(
+      `INSERT INTO password_resets (user_id, otp_hash, expires_at)
+       VALUES (?, ?, ?)`,
+      [userId, otpHash, expiresAt]
+    );
+
+    // FIX 1 (tiếp): Giải mã full_name bằng session tạm dùng google_secret
+    let fullName = 'ban';
+    if (user.google_secret) {
+      const { encryptionKey } = deriveKeyFromPassword(user.google_secret);
+      setSession(userId, { key: encryptionKey, password: user.google_secret });
+      const decrypted = decrypt(user.full_name, userId);
+      removeSession(userId);
+      fullName = decrypted || 'ban';
+    }
+
+    await sendOtpEmail({ to: normalizedEmail, otp, fullName });
+
+    return success(res, { email: normalizedEmail }, 'Da gui ma xac minh');
+  } catch (err) {
+    next(err);
+  }
+};
+
+const verifyOtp = async (req, res, next) => {
+  try {
+    const { email, otp } = req.body;
+    const normalizedEmail = normalizeEmail(email);
+
+    if (!normalizedEmail || !looksLikeEmail(normalizedEmail)) {
+      return error(res, 'Email khong hop le', 400);
+    }
+
+    if (!otp || !/^\d{6}$/.test(String(otp))) {
+      return error(res, 'Ma xac minh phai la 6 chu so', 400);
+    }
+
+    const emailLookup = hashEmail(normalizedEmail);
+    const [rows] = await pool.query(
+      `SELECT pr.reset_id, pr.otp_hash, pr.expires_at, pr.attempts,
+              u.user_id, u.full_name
+       FROM password_resets pr
+       JOIN users u ON pr.user_id = u.user_id
+       WHERE u.email_lookup = ? AND pr.consumed = 0
+       ORDER BY pr.created_at DESC LIMIT 1`,
+      [emailLookup]
+    );
+
+    if (rows.length === 0) {
+      return error(res, 'Ma xac minh khong hop le hoac da het han', 401);
+    }
+
+    const record = rows[0];
+
+    if (new Date(record.expires_at) < new Date()) {
+      await pool.query('DELETE FROM password_resets WHERE reset_id = ?', [record.reset_id]);
+      return error(res, 'Ma xac minh da het han. Vui long gui lai.', 401);
+    }
+
+    if (record.attempts >= OTP_MAX_ATTEMPTS) {
+      await pool.query('DELETE FROM password_resets WHERE reset_id = ?', [record.reset_id]);
+      return error(res, 'Qua nhieu lan nhap sai. Vui long gui lai ma moi.', 429);
+    }
+
+    const inputHash = hashOtp(String(otp));
+    if (inputHash !== record.otp_hash) {
+      await pool.query(
+        'UPDATE password_resets SET attempts = attempts + 1 WHERE reset_id = ?',
+        [record.reset_id]
+      );
+      const remaining = OTP_MAX_ATTEMPTS - record.attempts - 1;
+      return error(res, `Ma xac minh khong dung. Con ${remaining} lan thu.`, 401);
+    }
+
+    // FIX 3: Xoá OTP ngay sau khi xác thực thành công để ngăn replay attack
+    await pool.query('DELETE FROM password_resets WHERE reset_id = ?', [record.reset_id]);
+
+    // OTP dung — cap reset token
+    const resetToken = signResetToken(record.user_id);
+
+    return success(res, { reset_token: resetToken }, 'Xac minh thanh cong');
+  } catch (err) {
+    next(err);
+  }
+};
+
+const resetPassword = async (req, res, next) => {
+  try {
+    const { reset_token, new_password } = req.body;
+
+    if (!reset_token) {
+      return error(res, 'Token khong hop le', 400);
+    }
+
+    if (!new_password || new_password.length < 6) {
+      return error(res, 'Mat khau moi phai co it nhat 6 ky tu', 400);
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(reset_token, process.env.JWT_SECRET);
+    } catch {
+      return error(res, 'Token da het han hoac khong hop le', 401);
+    }
+
+    if (decoded.purpose !== 'password_reset') {
+      return error(res, 'Token khong hop le cho hanh dong nay', 401);
+    }
+
+    const userId = decoded.user_id;
+
+    const [rows] = await pool.query(
+      'SELECT password, google_secret FROM users WHERE user_id = ?',
+      [userId]
+    );
+    if (rows.length === 0) {
+      return error(res, 'Khong tim thay nguoi dung', 404);
+    }
+
+    if (!rows[0].password) {
+      return error(res, 'Tai khoan Google khong co mat khau de dat lai', 400);
+    }
+
+    const { authenticationSecret } = deriveKeyFromPassword(new_password);
+    const hashedPassword = await bcrypt.hash(authenticationSecret, SALT_ROUNDS);
+
+    await pool.query('UPDATE users SET password = ? WHERE user_id = ?', [
+      hashedPassword,
+      userId,
+    ]);
+
+    // Xoa OTP da su dung
+    await pool.query('DELETE FROM password_resets WHERE user_id = ?', [userId]);
+
+    return success(res, null, 'Dat lai mat khau thanh cong');
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = {
+  register,
+  login,
+  changePassword,
+  googleAuth,
+  googleCallback,
+  forgotPassword,
+  verifyOtp,
+  resetPassword,
+};
 

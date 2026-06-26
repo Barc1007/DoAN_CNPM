@@ -1,44 +1,40 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '../../../layouts/MainLayout';
-import { 
-  Settings as SettingsIcon, 
-  Moon, Bell, BellRing, Cloud, User, Monitor, HelpCircle,
-  ArrowRight, Eye, EyeOff, Lock, Check, X
+import {
+  Settings as SettingsIcon,
+  Bell, BellRing, User, Lock, Check, X, Loader2,
+  ArrowRight, Eye, EyeOff
 } from 'lucide-react';
 import styles from './SettingsPage.module.css';
 import { useAuth } from '../../auth/context/AuthContext';
 import apiClient from '../../../services/apiClient';
+import { useSettings } from '../hooks/useSettings';
 
 const SettingsPage: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { settings, update, isLoading } = useSettings();
 
-  const [darkMode, setDarkMode] = useState<boolean>(() => {
-    try { return localStorage.getItem('darkMode') === 'true'; } catch { return false; }
-  });
-  const [txNotifications, setTxNotifications] = useState<boolean>(() => {
-    try { return localStorage.getItem('txNotifications') !== 'false'; } catch { return true; }
-  });
-  const [budgetReminders, setBudgetReminders] = useState<boolean>(() => {
-    try { return localStorage.getItem('budgetReminders') !== 'false'; } catch { return true; }
-  });
-  const [autoBackup, setAutoBackup] = useState<boolean>(() => {
-    try { return localStorage.getItem('autoBackup') === 'true'; } catch { return false; }
-  });
-
-  // Password change modal
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
-  const [pwMsg, setPwMsg] = useState<{ok: boolean; text: string} | null>(null);
+  const [pwMsg, setPwMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [pwLoading, setPwLoading] = useState(false);
 
   const displayName = user?.full_name || user?.username || "Sinh Viên A";
   const displayEmail = user?.email || "sinhvien@edu.vn";
   const initials = displayName.split(" ").map(w => w[0]).join("").substring(0, 2).toUpperCase() || "SV";
+
+  const handleToggle = async (key: keyof typeof settings, value: boolean) => {
+    try {
+      await update({ [key]: value });
+    } catch {
+      /* optimistic, sẽ rollback từ hook */
+    }
+  };
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,14 +91,14 @@ const SettingsPage: React.FC = () => {
           <ArrowRight size={20} />
         </div>
 
-        {/* Quick Settings */}
         <div className={styles.sectionCard}>
-          <h3 className={styles.sectionTitle}>Cài đặt nhanh</h3>
+          <h3 className={styles.sectionTitle}>
+            Cài đặt nhanh
+            {isLoading && <Loader2 size={14} className={styles.spin} />}
+          </h3>
           {[
-            { id: 'dark', label: 'Chế độ tối', icon: Moon, val: darkMode, set: setDarkMode },
-            { id: 'tx', label: 'Thông báo giao dịch', icon: Bell, val: txNotifications, set: setTxNotifications },
-            { id: 'budget', label: 'Nhắc nhở ngân sách', icon: BellRing, val: budgetReminders, set: setBudgetReminders },
-            { id: 'backup', label: 'Tự động sao lưu', icon: Cloud, val: autoBackup, set: setAutoBackup },
+            { id: 'tx_notifications', label: 'Thông báo giao dịch', icon: Bell, val: settings.tx_notifications },
+            { id: 'budget_reminders', label: 'Nhắc nhở ngân sách', icon: BellRing, val: settings.budget_reminders },
           ].map(item => (
             <div key={item.id} className={styles.toggleRow}>
               <div className={styles.toggleLeft}>
@@ -110,14 +106,11 @@ const SettingsPage: React.FC = () => {
                 <span>{item.label}</span>
               </div>
               <label className={styles.switch}>
-                <input 
-                  type="checkbox" 
-                  checked={item.val} 
-                  onChange={e => {
-                    const checked = e.target.checked;
-                    item.set(checked);
-                    try { localStorage.setItem(item.id === 'dark' ? 'darkMode' : item.id, String(checked)); } catch { /* ignore */ }
-                  }} 
+                <input
+                  type="checkbox"
+                  checked={item.val}
+                  onChange={e => handleToggle(item.id as keyof typeof settings, e.target.checked)}
+                  disabled={isLoading}
                 />
                 <span className={styles.slider}></span>
               </label>
@@ -125,7 +118,6 @@ const SettingsPage: React.FC = () => {
           ))}
         </div>
 
-        {/* Account Section */}
         <div className={styles.sectionCard}>
           <h3 className={styles.sectionTitle}>Tài khoản</h3>
           <div className={styles.linkRow} onClick={() => navigate('/profile')}>
@@ -138,26 +130,11 @@ const SettingsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* App Section */}
-        <div className={styles.sectionCard}>
-          <h3 className={styles.sectionTitle}>Ứng dụng</h3>
-          <div className={styles.linkRow}>
-            <div className={styles.linkLeft}><Monitor size={18} /><span>Ngôn ngữ</span></div>
-            <span className={styles.linkValue}>Tiếng Việt</span>
-          </div>
-          <div className={styles.linkRow}>
-            <div className={styles.linkLeft}><HelpCircle size={18} /><span>Hỗ trợ</span></div>
-            <ArrowRight size={18} />
-          </div>
-        </div>
-
-        {/* Logout */}
         <button className={styles.logoutBtn} onClick={() => { logout(); navigate('/login'); }}>
           Đăng xuất
         </button>
       </div>
 
-      {/* Password Modal */}
       {showPasswordModal && (
         <div className={styles.modalOverlay} onClick={() => { setShowPasswordModal(false); setPwMsg(null); }}>
           <div className={styles.passwordModal} onClick={e => e.stopPropagation()}>

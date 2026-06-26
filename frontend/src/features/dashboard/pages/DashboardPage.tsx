@@ -6,7 +6,6 @@ import ChartCard from "../components/ChartCard";
 import TransactionList from "../components/TransactionList";
 import { useDashboardData } from "../hooks/useDashboardData";
 import { formatDate } from "../../../utils/formatDate";
-import { Plus } from "lucide-react";
 import styles from "./DashboardPage.module.css";
 import { useAuth } from "../../../features/auth/context/AuthContext";
 import { getGoalMetrics } from "../../goals/utils/goalMetrics";
@@ -68,9 +67,6 @@ const DashboardPage: React.FC = () => {
         </section>
       </div>
 
-      <button className={styles.fab}>
-        <Plus size={32} />
-      </button>
     </MainLayout>
   );
 };

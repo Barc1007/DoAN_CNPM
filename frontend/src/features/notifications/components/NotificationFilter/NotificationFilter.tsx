@@ -18,7 +18,7 @@ const NotificationFilter: React.FC<NotificationFilterProps> = ({
   const tabs = [
     { id: 'ALL', label: 'Tất cả', icon: <BellRing size={16} /> },
     { id: 'UNREAD', label: 'Chưa đọc', icon: <Bell size={16} />, badge: unreadCount },
-    { id: 'WARNING', label: 'Cảnh báo', icon: <AlertTriangle size={16} /> },
+    { id: 'BUDGET', label: 'Ngân sách', icon: <AlertTriangle size={16} /> },
     { id: 'REMINDER', label: 'Nhắc nhở', icon: <Bell size={16} /> },
     { id: 'SYSTEM', label: 'Hệ thống', icon: <Info size={16} /> },
   ];

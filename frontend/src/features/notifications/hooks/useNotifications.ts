@@ -86,12 +86,12 @@ export const useNotifications = () => {
     switch (filter) {
       case 'UNREAD':
         return notifications.filter(n => !n.is_read);
-      case 'WARNING':
-        return notifications.filter(n => n.type === 'WARNING');
+      case 'BUDGET':
+        return notifications.filter(n => n.type === 'budget_alert');
       case 'REMINDER':
-        return notifications.filter(n => n.type === 'REMINDER');
+        return notifications.filter(n => n.type === 'daily_reminder');
       case 'SYSTEM':
-        return notifications.filter(n => n.type === 'SYSTEM');
+        return notifications.filter(n => n.type === 'system');
       default:
         return notifications;
     }

@@ -2,14 +2,20 @@ const pool = require('../config/db');
 const { success, error } = require('../utils/response');
 const { encrypt, decrypt } = require('../utils/crypto');
 
+const log = (...args) => {
+  console.log('[wallet.controller]', ...args);
+};
+
 const getWallets = async (req, res, next) => {
   try {
     const userId = req.query.user_id || req.user.user_id;
+    log('getWallets start, userId=', userId);
 
     const [rows] = await pool.query(
       'SELECT * FROM v_wallet_balance WHERE user_id = ?',
       [userId]
     );
+    log('found wallets count=', rows.length);
 
     const result = await Promise.all(rows.map(async (w) => {
       const initialBalance = Number(decrypt(w.initial_balance, userId)) || 0;
@@ -30,17 +36,45 @@ const getWallets = async (req, res, next) => {
         else expense += amount;
       }
 
+      const [goalContribs] = await pool.query(
+        `SELECT gc.amount, gc.wallet_id AS contrib_wallet_id, g.wallet_id AS goal_wallet_id
+         FROM goal_contributions gc
+         JOIN goals g ON gc.goal_id = g.goal_id
+         WHERE gc.wallet_id = ? OR g.wallet_id = ?`,
+        [w.wallet_id, w.wallet_id]
+      );
+
+      let contributedToGoals = 0;
+      const matched = [];
+      for (const gc of goalContribs) {
+        const amt = Number(decrypt(gc.amount, userId)) || 0;
+        contributedToGoals += amt;
+        matched.push({ amount: amt, contrib_wallet_id: gc.contrib_wallet_id, goal_wallet_id: gc.goal_wallet_id });
+      }
+      log(`wallet ${w.wallet_id} "${w.name}" contributedToGoals=`, contributedToGoals, 'matched=', matched);
+
+      const currentBalance = initialBalance + income - expense - contributedToGoals;
+      log(`wallet ${w.wallet_id} "${w.name}" balance=`, {
+        initialBalance,
+        income,
+        expense,
+        contributedToGoals,
+        currentBalance,
+      });
+
       return {
         ...w,
         name: decrypt(w.name, userId),
         initial_balance: initialBalance,
-        current_balance: initialBalance + income - expense,
+        current_balance: currentBalance,
         transaction_count: transactions.length,
       };
     }));
 
+    log('getWallets done, returning', result.length, 'wallets');
     return success(res, result);
   } catch (err) {
+    log('getWallets error:', err.message);
     next(err);
   }
 };

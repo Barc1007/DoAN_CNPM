@@ -1,6 +1,7 @@
 const pool = require('../config/db');
 const { success, error } = require('../utils/response');
 const { encrypt, decrypt } = require('../utils/crypto');
+const { evaluateBudgets } = require('../services/budgetAlert.service');
 
 const isEncryptedValue = (value) => (
   typeof value === 'string' && /^[a-f0-9]{32}:[a-f0-9]+$/i.test(value)
@@ -116,6 +117,8 @@ const createTransaction = async (req, res, next) => {
       note: decryptText(rows[0].note, userId) || '',
     };
 
+    await evaluateBudgets(userId, category_id, rows[0].transaction_date);
+
     return success(res, response, 'Tạo giao dịch thành công', 201);
   } catch (err) {
     next(err);
@@ -217,6 +220,8 @@ const updateTransaction = async (req, res, next) => {
       note: decryptText(rows[0].note, userId) || '',
     };
 
+    await evaluateBudgets(userId, nextCategoryId, rows[0].transaction_date);
+
     return success(res, response, 'Cập nhật giao dịch thành công');
   } catch (err) {
     next(err);
@@ -248,6 +253,8 @@ const deleteTransaction = async (req, res, next) => {
     if (result.affectedRows === 0) {
       return error(res, 'Không tìm thấy giao dịch', 404);
     }
+
+    await evaluateBudgets(userId, transactions[0].category_id, new Date());
 
     return success(res, null, 'Xoá giao dịch thành công');
   } catch (err) {

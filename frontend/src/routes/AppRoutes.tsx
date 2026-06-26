@@ -4,6 +4,9 @@ import DashboardPage from '../features/dashboard/pages/DashboardPage';
 import LoginPage from '../features/auth/pages/LoginPage/LoginPage';
 import RegisterPage from '../features/auth/pages/RegisterPage/RegisterPage';
 import GoogleCallbackPage from '../features/auth/pages/GoogleCallbackPage/GoogleCallbackPage';
+import ForgotPasswordPage from '../features/auth/pages/ForgotPasswordPage/ForgotPasswordPage';
+import VerifyOtpPage from '../features/auth/pages/VerifyOtpPage/VerifyOtpPage';
+import ResetPasswordPage from '../features/auth/pages/ResetPasswordPage/ResetPasswordPage';
 import ProfilePage from '../features/profile/pages/ProfilePage';
 import TransactionsPage from '../features/transactions/pages/TransactionsPage';
 import CategoryPage from '../features/category/pages/CategoryPage';
@@ -20,6 +23,9 @@ const AppRoutes: React.FC = () => {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/auth/callback" element={<GoogleCallbackPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/verify-otp" element={<VerifyOtpPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/transactions" element={<TransactionsPage />} />
