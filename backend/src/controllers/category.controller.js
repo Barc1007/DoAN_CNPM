@@ -81,8 +81,9 @@ const createCategory = async (req, res, next) => {
   try {
     const { name, type } = req.body;
     const userId = req.body.user_id || req.user.user_id;
+    const trimmedName = typeof name === 'string' ? name.trim() : '';
 
-    if (!name || !type) {
+    if (!trimmedName || !type) {
       return error(res, 'Vui lòng nhập tên và loại danh mục', 400);
     }
 
@@ -90,9 +91,25 @@ const createCategory = async (req, res, next) => {
       return error(res, 'Loại danh mục phải là income hoặc expense', 400);
     }
 
+    const [categories] = await pool.query(
+      'SELECT category_id, name, user_id FROM categories WHERE type = ? AND (user_id IS NULL OR user_id = ?)',
+      [type, userId]
+    );
+
+    const duplicated = categories.some((category) => {
+      const categoryName = category.user_id === null
+        ? category.name
+        : decrypt(category.name, userId);
+      return String(categoryName).trim().toLowerCase() === trimmedName.toLowerCase();
+    });
+
+    if (duplicated) {
+      return error(res, 'Danh mục này đã tồn tại', 409);
+    }
+
     const [result] = await pool.query(
       'INSERT INTO categories (user_id, name, type) VALUES (?, ?, ?)',
-      [userId, encrypt(name, userId), type]
+      [userId, encrypt(trimmedName, userId), type]
     );
 
     const [rows] = await pool.query(

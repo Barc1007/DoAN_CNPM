@@ -128,6 +128,19 @@ export const useCategoryData = (initialType: CategoryType = "expense") => {
     }
   };
 
+  const addCategory = async (name: string, categoryType: CategoryType = type) => {
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      throw new Error("Vui lòng nhập tên danh mục");
+    }
+
+    await categoryService.createCategory({
+      name: trimmedName,
+      type: categoryType,
+    });
+    await fetchCategoryData();
+  };
+
   return {
     type,
     data,
@@ -136,6 +149,7 @@ export const useCategoryData = (initialType: CategoryType = "expense") => {
     handleTabChange,
     updateCategoryBudget,
     updateCategoryName,
+    addCategory,
     refetch: fetchCategoryData,
   };
 };

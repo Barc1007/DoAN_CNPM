@@ -1,14 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./CategoryPage.module.css";
 import { useCategoryData } from "../hooks/useCategoryData";
 import CategoryHeader from "../components/CategoryHeader/CategoryHeader";
 import CategorySummary from "../components/CategorySummary/CategorySummary";
 import CategoryCard from "../components/CategoryCard/CategoryCard";
+import AddCategoryModal from "../components/AddCategoryModal/AddCategoryModal";
 import MainLayout from "../../../layouts/MainLayout";
 
 const CategoryPage: React.FC = () => {
   const navigate = useNavigate();
+  const [showAddModal, setShowAddModal] = useState(false);
   const {
     type,
     data,
@@ -17,6 +19,7 @@ const CategoryPage: React.FC = () => {
     handleTabChange,
     updateCategoryBudget,
     updateCategoryName,
+    addCategory,
   } = useCategoryData("expense");
 
   const handleViewTransactions = (categoryName: string) => {
@@ -45,6 +48,7 @@ const CategoryPage: React.FC = () => {
         <CategoryHeader
           activeTab={type}
           onTabChange={handleTabChange}
+          onAddCategory={() => setShowAddModal(true)}
         />
 
         {data && (
@@ -63,6 +67,14 @@ const CategoryPage: React.FC = () => {
               ))}
             </div>
           </>
+        )}
+
+        {showAddModal && (
+          <AddCategoryModal
+            initialType={type}
+            onClose={() => setShowAddModal(false)}
+            onSubmit={addCategory}
+          />
         )}
       </div>
     </MainLayout>

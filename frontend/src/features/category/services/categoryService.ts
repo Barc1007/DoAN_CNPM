@@ -1,5 +1,5 @@
 import apiClient from "../../../services/apiClient";
-import type { CategoryData } from "../../../types/category";
+import type { Category, CategoryData, CategoryType } from "../../../types/category";
 
 const IS_MOCK = false;
 
@@ -34,5 +34,9 @@ export const categoryService = {
    */
   updateCategoryName: async (categoryId: number, name: string): Promise<unknown> => {
     return apiClient.put<unknown, unknown>(`/categories/${categoryId}`, { name });
+  },
+
+  createCategory: async (payload: { name: string; type: CategoryType }): Promise<Category> => {
+    return apiClient.post<unknown, Category>("/categories", payload);
   },
 };
