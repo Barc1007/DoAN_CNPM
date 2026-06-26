@@ -6,6 +6,7 @@ import { authService } from '../services/authService';
 interface AuthContextType {
   user: User | null;
   login: (credentials: LoginRequest, rememberMe: boolean) => Promise<void>;
+  loginWithToken: (user: User) => void;
   logout: () => void;
 }
 
@@ -30,13 +31,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const loginWithToken = (userData: User) => {
+    setUser(userData);
+    localStorage.setItem("user", JSON.stringify(userData));
+  };
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, loginWithToken, logout }}>
       {children}
     </AuthContext.Provider>
   );
@@ -48,4 +54,4 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-};
+};

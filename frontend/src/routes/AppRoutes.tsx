@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import DashboardPage from '../features/dashboard/pages/DashboardPage';
 import LoginPage from '../features/auth/pages/LoginPage/LoginPage';
 import RegisterPage from '../features/auth/pages/RegisterPage/RegisterPage';
+import GoogleCallbackPage from '../features/auth/pages/GoogleCallbackPage/GoogleCallbackPage';
 import ProfilePage from '../features/profile/pages/ProfilePage';
 import TransactionsPage from '../features/transactions/pages/TransactionsPage';
 import CategoryPage from '../features/category/pages/CategoryPage';
@@ -18,6 +19,7 @@ const AppRoutes: React.FC = () => {
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/auth/callback" element={<GoogleCallbackPage />} />
       <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/transactions" element={<TransactionsPage />} />
@@ -32,3 +34,4 @@ const AppRoutes: React.FC = () => {
 };
 
 export default AppRoutes;
+

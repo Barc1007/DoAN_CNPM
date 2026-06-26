@@ -2,6 +2,7 @@ import apiClient from "../../../services/apiClient";
 import type { User, LoginRequest, RegisterRequest } from "../types/auth";
 
 const IS_MOCK = false;
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export const authService = {
   login: async (credentials: LoginRequest): Promise<User> => {
@@ -43,5 +44,9 @@ export const authService = {
 
     const response = await apiClient.post<unknown, User>("/auth/register", credentials);
     return response;
-  }
-};
+  },
+
+  loginWithGoogle: () => {
+    window.location.href = `${API_BASE_URL}/auth/google`;
+  },
+};

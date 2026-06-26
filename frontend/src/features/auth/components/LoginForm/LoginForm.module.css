@@ -207,7 +207,7 @@
 }
 
 .demoNote {
-  margin-top: 3rem;
+  margin-top: 1.5rem;
   padding: 1rem;
   background: #E6FFFA;
   border-radius: 0.5rem;
@@ -216,8 +216,62 @@
   text-align: center;
 }
 
+/* Google Login Button */
+.googleBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.9rem 1.5rem;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 2rem;
+  background: white;
+  color: #2D3748;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.googleBtn:hover {
+  border-color: #4ECDC4;
+  box-shadow: 0 4px 16px rgba(78, 205, 196, 0.15);
+  transform: translateY(-1px);
+}
+
+.googleBtn:active {
+  transform: translateY(0);
+}
+
+.googleIcon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* Separator */
+.separator {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: #A0AEC0;
+  font-size: 0.9rem;
+  margin: 0.25rem 0;
+}
+
+.separator::before,
+.separator::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #E2E8F0;
+}
+
 @media (max-width: 600px) {
   .container {
     padding: 2rem;
   }
 }
+

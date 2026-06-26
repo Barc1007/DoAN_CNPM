@@ -6,17 +6,23 @@ CREATE DATABASE IF NOT EXISTS studentmoney
 
 USE studentmoney;
 CREATE TABLE users (
-  user_id    INT             NOT NULL AUTO_INCREMENT,
-  username   VARCHAR(50)     NOT NULL,
-  email      VARCHAR(100)    NOT NULL,
-  password   VARCHAR(255)    NOT NULL,
-  full_name  TEXT            NOT NULL,
-  created_at DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  user_id       INT             NOT NULL AUTO_INCREMENT,
+  username      VARCHAR(50)     NOT NULL,
+  email         VARCHAR(100)    NOT NULL,
+  password      VARCHAR(255)    NULL,
+  full_name     TEXT            NOT NULL,
+  google_id     VARCHAR(255)    NULL,
+  auth_provider ENUM('local','google') NOT NULL DEFAULT 'local',
+  google_secret VARCHAR(255)    NULL,
+  created_at    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
  
   PRIMARY KEY (user_id),
   UNIQUE KEY uq_users_username (username),
-  UNIQUE KEY uq_users_email    (email)
+  UNIQUE KEY uq_users_email    (email),
+  UNIQUE KEY uq_users_google_id (google_id),
+  INDEX idx_users_google_id (google_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
  
 
 CREATE TABLE categories (

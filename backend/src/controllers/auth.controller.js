@@ -1,8 +1,17 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const { OAuth2Client } = require('google-auth-library');
 const pool = require('../config/db');
 const { success, error } = require('../utils/response');
 const { deriveKeyFromPassword, setSession, encryptWithKey, decrypt } = require('../utils/crypto');
+
+// Lazy getter: đảm bảo đọc env SAU khi dotenv.config() đã chạy
+const getGoogleClient = () => new OAuth2Client(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  process.env.GOOGLE_CALLBACK_URL
+);
 
 const SALT_ROUNDS = 10;
 const DEFAULT_CATEGORIES = [
@@ -248,4 +257,131 @@ const changePassword = async (req, res, next) => {
   }
 };
 
-module.exports = { register, login, changePassword };
+
+const googleAuth = (req, res) => {
+  const client = getGoogleClient();
+  const scopes = ['openid', 'email', 'profile'];
+  const authUrl = client.generateAuthUrl({
+    access_type: 'offline',
+    scope: scopes,
+    prompt: 'select_account',
+    redirect_uri: process.env.GOOGLE_CALLBACK_URL,
+  });
+  res.redirect(authUrl);
+};
+
+const googleCallback = async (req, res, next) => {
+  try {
+    const { code } = req.query;
+
+    if (!code) {
+      return res.redirect(`${process.env.FRONTEND_URL}/login?error=google_auth_failed`);
+    }
+
+    const client = getGoogleClient();
+
+    // Đổi authorization code lấy tokens (phải truyền redirect_uri tường minh)
+    const { tokens } = await client.getToken({
+      code,
+      redirect_uri: process.env.GOOGLE_CALLBACK_URL,
+    });
+    client.setCredentials(tokens);
+
+    // Xác minh ID token để lấy thông tin người dùng
+    const ticket = await client.verifyIdToken({
+      idToken: tokens.id_token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { sub: googleId, email, name: fullName, picture } = payload;
+
+    // Kiểm tra user đã tồn tại chưa (theo google_id hoặc email)
+    const [existingByGoogleId] = await pool.query(
+      'SELECT * FROM users WHERE google_id = ?',
+      [googleId]
+    );
+
+    let user;
+    let encryptionKey;
+
+    if (existingByGoogleId.length > 0) {
+      // User đã tồn tại → đăng nhập bình thường
+      user = existingByGoogleId[0];
+      const { encryptionKey: key } = deriveKeyFromPassword(user.google_secret);
+      encryptionKey = key;
+    } else {
+      // Kiểm tra email đã tồn tại với tài khoản local chưa
+      const [existingByEmail] = await pool.query(
+        'SELECT * FROM users WHERE email = ? AND auth_provider = "local"',
+        [encryptWithKey(email, deriveKeyFromPassword('temp').encryptionKey)]
+      );
+
+      // Tạo random secret để derive encryption key (thay thế password cho Google users)
+      const googleSecret = crypto.randomBytes(32).toString('hex');
+      const { encryptionKey: key } = deriveKeyFromPassword(googleSecret);
+      encryptionKey = key;
+
+      // Tạo username duy nhất từ email
+      const baseUsername = email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '') || 'user';
+      let username = baseUsername;
+      let suffix = 1;
+      while (true) {
+        const [taken] = await pool.query('SELECT user_id FROM users WHERE username = ?', [username]);
+        if (taken.length === 0) break;
+        username = `${baseUsername}${suffix++}`;
+      }
+
+      // Tạo user mới
+      const [result] = await pool.query(
+        `INSERT INTO users (full_name, username, email, password, google_id, auth_provider, google_secret)
+         VALUES (?, ?, ?, NULL, ?, 'google', ?)`,
+        [
+          encryptWithKey(fullName, encryptionKey),
+          username,
+          encryptWithKey(email, encryptionKey),
+          googleId,
+          googleSecret,
+        ]
+      );
+
+      const [newUser] = await pool.query('SELECT * FROM users WHERE user_id = ?', [result.insertId]);
+      user = newUser[0];
+
+      await ensureDefaultCategories();
+    }
+
+    // Set session cho encryption
+    setSession(user.user_id, { key: encryptionKey, password: user.google_secret });
+
+    // Ký JWT
+    const token = jwt.sign(
+      { user_id: user.user_id, username: user.username },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+    );
+
+    // Decrypt thông tin để gửi về frontend
+    const decryptedFullName = decrypt(user.full_name, user.user_id);
+    const decryptedEmail = decrypt(user.email, user.user_id);
+
+    const userData = {
+      user_id: user.user_id,
+      username: user.username,
+      email: decryptedEmail,
+      full_name: decryptedFullName,
+      auth_provider: user.auth_provider,
+      token,
+    };
+
+    // Redirect về frontend với token trong query param
+    const params = new URLSearchParams({ token: JSON.stringify(userData) });
+    return res.redirect(`${process.env.FRONTEND_URL}/auth/callback?${params.toString()}`);
+  } catch (err) {
+    console.error('Google OAuth error:', err);
+    return res.redirect(`${process.env.FRONTEND_URL}/login?error=google_auth_failed`);
+  }
+};
+
+module.exports = { register, login, changePassword, googleAuth, googleCallback };
+
