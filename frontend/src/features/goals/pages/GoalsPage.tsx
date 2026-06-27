@@ -10,6 +10,7 @@ import EditGoalModal from "../components/EditGoalModal/EditGoalModal";
 import ContributeModal from "../components/ContributeModal/ContributeModal";
 import { useGoals } from "../hooks/useGoals";
 import { useBudgets } from "../hooks/useBudgets";
+import { goalApi } from "../services/goalApi";
 import type { SavingGoal } from "../types/goal";
 import type { BudgetSummaryData } from "../types/budget";
 import BudgetCard from "../components/BudgetCard/BudgetCard";
@@ -92,9 +93,16 @@ const GoalsPage: React.FC = () => {
                   goal={goal}
                   index={index}
                   onEdit={(g) => setEditingGoal(g)}
-                  onDelete={(g) => {
+                  onDelete={async (g) => {
                     if (window.confirm(`Xoá mục tiêu "${g.name}"?`)) {
-                      setEditingGoal(g);
+                      try {
+                        await goalApi.deleteGoal(g.goal_id);
+                        setGoals((prev: SavingGoal[]) =>
+                          prev.filter((goal) => goal.goal_id !== g.goal_id)
+                        );
+                      } catch (err: unknown) {
+                        window.alert(err instanceof Error ? err.message : "Xoá mục tiêu thất bại");
+                      }
                     }
                   }}
                   onContribute={(goalId) => {
