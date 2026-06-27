@@ -1,5 +1,4 @@
 import React from "react";
-import { Download, Filter } from "lucide-react";
 import MainLayout from "../../../layouts/MainLayout";
 import ReportPeriodTabs from "../components/ReportPeriodTabs/ReportPeriodTabs";
 import ReportSummaryCards from "../components/ReportSummaryCards/ReportSummaryCards";
@@ -27,17 +26,6 @@ const ReportsPage: React.FC = () => {
             <h1>Báo cáo & Thống kê <span aria-hidden="true">📊</span></h1>
             <p>Phân tích chi tiết thu chi và xu hướng tài chính</p>
           </div>
-
-          <div className={styles.actions}>
-            <button type="button" className={styles.filterButton}>
-              <Filter size={18} />
-              Lọc
-            </button>
-            <button type="button" className={styles.exportButton}>
-              <Download size={18} />
-              Xuất báo cáo
-            </button>
-          </div>
         </header>
 
         <ReportPeriodTabs activePeriod={period} onPeriodChange={setPeriod} />
@@ -54,7 +42,7 @@ const ReportsPage: React.FC = () => {
               <CategoryPieChart data={data.category_breakdown} />
             </div>
 
-            <ExpenseTrendChart data={data.expense_trend} />
+            <ExpenseTrendChart data={data.expense_trend} period={period} />
             <CategoryBreakdownTable data={data.category_breakdown} />
           </>
         )}

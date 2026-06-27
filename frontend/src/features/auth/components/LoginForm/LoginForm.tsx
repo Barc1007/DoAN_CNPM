@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Lock, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import styles from "./LoginForm.module.css";
 import { useLoginForm } from '../../hooks/useLoginForm';
@@ -38,13 +38,13 @@ const LoginForm: React.FC = () => {
         {error && <div className={styles.error}>{error}</div>}
 
         <div className={styles.inputGroup}>
-          <label htmlFor="username">Tên đăng nhập</label>
+          <label htmlFor="username">Tên đăng nhập hoặc email</label>
           <div className={styles.inputWrapper}>
-            <User className={styles.inputIcon} size={20} />
+            <Mail className={styles.inputIcon} size={20} />
             <input 
               id="username"
               type="text" 
-              placeholder="Nhập tên đăng nhập" 
+              placeholder="Nhập tên đăng nhập hoặc email" 
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className={styles.input}

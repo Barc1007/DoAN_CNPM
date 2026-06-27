@@ -93,7 +93,8 @@
   height: 100%;
   background: #6366f1;
   border-radius: 4px;
-  transition: width 0.3s ease;
+  transform-origin: left center;
+  animation: progressSweep 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .teal .fill {
@@ -202,4 +203,14 @@
 
 .actionBtnDelete:hover {
   background: #fef2f2;
+}
+
+@keyframes progressSweep {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
 }

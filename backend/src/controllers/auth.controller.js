@@ -7,7 +7,7 @@ const { success, error } = require('../utils/response');
 const { deriveKeyFromPassword, setSession, removeSession, encryptWithKey, decrypt } = require('../utils/crypto');
 const { sendOtpEmail } = require('../services/mailer');
 
-// Lazy getter: đảm bảo đọc env SAU khi dotenv.config() đã chạy
+
 const getGoogleClient = () => new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
@@ -153,11 +153,15 @@ const register = async (req, res, next) => {
     }
 
     const [existing] = await pool.query(
-      'SELECT user_id FROM users WHERE username = ? OR email_lookup = ?',
+      'SELECT user_id, email_lookup, password FROM users WHERE username = ? OR email_lookup = ?',
       [username, emailLookup]
     );
 
     if (existing.length > 0) {
+      const existingByEmail = existing.find((row) => row.email_lookup === emailLookup);
+      if (existingByEmail && !existingByEmail.password) {
+        return error(res, 'Email này đã được đăng ký bằng Google. Vui lòng đăng nhập bằng Google hoặc đặt mật khẩu.', 409);
+      }
       return error(res, 'Tên đăng nhập hoặc email đã tồn tại', 409);
     }
 
@@ -198,25 +202,32 @@ const register = async (req, res, next) => {
 
 const login = async (req, res, next) => {
   try {
-    const { username, password } = req.body;
+    const { username, email, password } = req.body;
+    const loginIdentifier = String(email || username || '').trim();
 
-    if (!username || !password) {
-      return error(res, 'Vui lòng nhập tên đăng nhập và mật khẩu', 400);
+    if (!loginIdentifier || !password) {
+      return error(res, 'Vui lòng nhập tên đăng nhập/email và mật khẩu', 400);
     }
 
-    const [rows] = await pool.query(
-      'SELECT * FROM users WHERE username = ?',
-      [username]
-    );
+    const isEmailLogin = looksLikeEmail(loginIdentifier);
+    const [rows] = isEmailLogin
+      ? await pool.query(
+          'SELECT * FROM users WHERE email_lookup = ?',
+          [hashEmail(loginIdentifier)]
+        )
+      : await pool.query(
+          'SELECT * FROM users WHERE username = ?',
+          [loginIdentifier]
+        );
 
     if (rows.length === 0) {
-      return error(res, 'Tên đăng nhập hoặc mật khẩu không đúng', 401);
+      return error(res, 'Email/tên đăng nhập hoặc mật khẩu không đúng', 401);
     }
 
     const user = rows[0];
 
     if (!user.password) {
-      return error(res, 'Tài khoản này đăng nhập bằng Google. Vui lòng dùng Google để đăng nhập.', 401);
+      return error(res, 'Tài khoản này được đăng ký bằng Google. Vui lòng đăng nhập bằng Google hoặc đặt mật khẩu mới.', 401);
     }
 
     const { authenticationSecret, encryptionKey } = deriveKeyFromPassword(password);
@@ -225,7 +236,7 @@ const login = async (req, res, next) => {
     isMatch = isMatch || isLegacyPasswordHash;
 
     if (!isMatch) {
-      return error(res, 'Tên đăng nhập hoặc mật khẩu không đúng', 401);
+      return error(res, 'Email/tên đăng nhập hoặc mật khẩu không đúng', 401);
     }
 
     if (isLegacyPasswordHash) {
@@ -704,15 +715,12 @@ const resetPassword = async (req, res, next) => {
       return error(res, 'Khong tim thay nguoi dung', 404);
     }
 
-    if (!rows[0].password) {
-      return error(res, 'Tai khoan Google khong co mat khau de dat lai', 400);
-    }
-
     const { authenticationSecret } = deriveKeyFromPassword(new_password);
     const hashedPassword = await bcrypt.hash(authenticationSecret, SALT_ROUNDS);
 
-    await pool.query('UPDATE users SET password = ? WHERE user_id = ?', [
+    await pool.query('UPDATE users SET password = ?, auth_provider = ? WHERE user_id = ?', [
       hashedPassword,
+      rows[0].google_secret ? 'both' : 'local',
       userId,
     ]);
 

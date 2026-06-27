@@ -12,17 +12,25 @@ import { CalendarDays } from "lucide-react";
 import { formatMoney } from "../../../../utils/formatMoney";
 import ChartPanel from "../ChartPanel/ChartPanel";
 import styles from "./ExpenseTrendChart.module.css";
-import type { ExpenseTrendPoint } from "../../types/report";
+import type { ExpenseTrendPoint, ReportPeriod } from "../../types/report";
 
 interface ExpenseTrendChartProps {
   data: ExpenseTrendPoint[];
+  period: ReportPeriod;
 }
 
-const ExpenseTrendChart: React.FC<ExpenseTrendChartProps> = ({ data }) => {
+const TREND_TITLES: Record<ReportPeriod, string> = {
+  week: "Xu hướng chi tiêu tuần này",
+  month: "Xu hướng chi tiêu tháng này",
+  quarter: "Xu hướng chi tiêu quý này",
+  year: "Xu hướng chi tiêu năm nay",
+};
+
+const ExpenseTrendChart: React.FC<ExpenseTrendChartProps> = ({ data, period }) => {
   const chartKey = data.map((item) => `${item.date}-${item.amount}`).join("|");
 
   return (
-    <ChartPanel title="Xu hướng chi tiêu 7 ngày qua" icon={CalendarDays}>
+    <ChartPanel title={TREND_TITLES[period]} icon={CalendarDays}>
       <div className={styles.chart}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart key={chartKey} data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>

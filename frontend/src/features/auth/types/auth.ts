@@ -5,7 +5,7 @@ export interface User {
   password?: string;
   full_name: string;
   token?: string;
-  auth_provider?: 'local' | 'google';
+  auth_provider?: 'local' | 'google' | 'both';
 }
 
 export interface LoginRequest {

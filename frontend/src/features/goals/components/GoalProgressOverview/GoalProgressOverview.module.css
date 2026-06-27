@@ -43,4 +43,16 @@
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, #45c7c3 0%, #ffd43b 100%);
+  transform-origin: left center;
+  animation: progressSweep 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes progressSweep {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
 }

@@ -145,8 +145,7 @@ const getBucketStart = (date, period) => {
   const d = new Date(date);
 
   if (period === 'week') {
-    const dayOfWeek = d.getDay();
-    return new Date(d.getFullYear(), d.getMonth(), d.getDate() - dayOfWeek);
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
   }
 
   if (period === 'month') {

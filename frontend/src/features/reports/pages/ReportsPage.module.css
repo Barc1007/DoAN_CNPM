@@ -28,48 +28,6 @@
   font-size: 18px;
 }
 
-.actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
-}
-
-.filterButton,
-.exportButton {
-  min-height: 48px;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  padding: 0 20px;
-  font-size: 16px;
-  font-weight: 700;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-}
-
-.filterButton {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  color: var(--color-text-main);
-}
-
-.exportButton {
-  color: #ffffff;
-  background: linear-gradient(135deg, #4ecdc4 0%, #7bd98f 48%, #ffd233 100%);
-  box-shadow: 0 14px 28px rgba(20, 184, 166, 0.22);
-}
-
-.filterButton:hover,
-.exportButton:hover {
-  transform: translateY(-2px);
-}
-
-.filterButton:hover {
-  border-color: rgba(20, 184, 166, 0.38);
-}
-
 .state {
   text-align: center;
   padding: 48px;
@@ -92,15 +50,5 @@
 @media (max-width: 760px) {
   .header {
     flex-direction: column;
-  }
-
-  .actions {
-    width: 100%;
-    flex-wrap: wrap;
-  }
-
-  .filterButton,
-  .exportButton {
-    flex: 1 1 180px;
   }
 }
