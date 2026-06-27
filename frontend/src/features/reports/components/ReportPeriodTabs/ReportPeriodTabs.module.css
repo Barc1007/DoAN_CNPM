@@ -3,23 +3,28 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 6px;
-  box-shadow: var(--shadow-soft);
+  border-radius: 16px;
+  padding: 10px;
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.12);
 }
 
 .tabButton {
-  height: 36px;
-  border-radius: 8px;
+  height: 44px;
+  border-radius: 999px;
   color: var(--color-text-muted);
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 700;
+  transition: background 0.2s ease, box-shadow 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
 .active {
-  background: var(--color-primary);
+  background: #4ecdc4;
   color: var(--color-white);
-  box-shadow: 0 8px 16px rgba(47, 143, 137, 0.18);
+  box-shadow: 0 10px 18px rgba(20, 184, 166, 0.24);
+}
+
+.tabButton:hover {
+  transform: translateY(-1px);
 }
 
 @media (max-width: 620px) {

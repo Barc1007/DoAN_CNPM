@@ -20,12 +20,14 @@ interface CashflowBarChartProps {
 }
 
 const CashflowBarChart: React.FC<CashflowBarChartProps> = ({ data }) => {
+  const chartKey = data.map((item) => `${item.label}-${item.income}-${item.expense}`).join("|");
+
   return (
     <ChartPanel title="Dòng tiền thu chi" icon={BarChart3}>
       <div className={styles.chart}>
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#eef1f4" />
+          <BarChart key={chartKey} data={data} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#e7edf3" />
             <XAxis dataKey="label" tick={{ fontSize: 12, fill: "#6b7280" }} />
             <YAxis
               tick={{ fontSize: 12, fill: "#6b7280" }}
@@ -36,8 +38,24 @@ const CashflowBarChart: React.FC<CashflowBarChartProps> = ({ data }) => {
               cursor={{ fill: "#f4f6f8" }}
             />
             <Legend wrapperStyle={{ fontSize: 13 }} />
-            <Bar dataKey="income" name="Thu nhập" fill="#2f8f89" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="expense" name="Chi tiêu" fill="#a74756" radius={[4, 4, 0, 0]} />
+            <Bar
+              dataKey="income"
+              name="Thu nhập"
+              fill="#18b985"
+              radius={[8, 8, 0, 0]}
+              isAnimationActive
+              animationBegin={120}
+              animationDuration={900}
+            />
+            <Bar
+              dataKey="expense"
+              name="Chi tiêu"
+              fill="#f59e0b"
+              radius={[8, 8, 0, 0]}
+              isAnimationActive
+              animationBegin={260}
+              animationDuration={900}
+            />
           </BarChart>
         </ResponsiveContainer>
       </div>

@@ -31,6 +31,12 @@ const buildSavingsGoal = (goal, userId) => {
   };
 };
 
+const decryptText = (value, userId) => {
+  const decrypted = decrypt(value, userId);
+  const stillEncrypted = typeof decrypted === 'string' && /^[a-f0-9]{32}:[a-f0-9]+$/i.test(decrypted);
+  return stillEncrypted ? '' : decrypted;
+};
+
 const getDashboardSummary = async (req, res, next) => {
   try {
     const userId = req.query.user_id || req.user.user_id;
@@ -113,6 +119,7 @@ const getDashboardSummary = async (req, res, next) => {
       ...t,
       amount: Number(decrypt(t.amount, userId)) || 0,
       note: decrypt(t.note, userId) || '',
+      category_name: decryptText(t.category_name, userId) || t.category_name || '',
     }));
 
     const [categorySpent] = await pool.query(
@@ -127,7 +134,10 @@ const getDashboardSummary = async (req, res, next) => {
     for (const row of categorySpent) {
       const amount = Number(decrypt(row.amount, userId)) || 0;
       if (!categoryMap[row.category_id]) {
-        categoryMap[row.category_id] = { name: row.name, amount: 0 };
+        categoryMap[row.category_id] = {
+          name: decryptText(row.name, userId) || row.name,
+          amount: 0,
+        };
       }
       categoryMap[row.category_id].amount += amount;
     }

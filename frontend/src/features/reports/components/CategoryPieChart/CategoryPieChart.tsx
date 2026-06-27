@@ -11,19 +11,25 @@ interface CategoryPieChartProps {
 }
 
 const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ data }) => {
+  const chartKey = data.map((item) => `${item.category_id}-${item.amount}`).join("|");
+
   return (
-    <ChartPanel title="Phân bổ chi tiêu theo danh mục" icon={PieChartIcon}>
+    <ChartPanel title="Chi tiêu theo danh mục" icon={PieChartIcon}>
       <div className={styles.content}>
         <div className={styles.chart}>
           <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
+            <PieChart key={chartKey}>
               <Pie
                 data={data}
                 dataKey="amount"
                 nameKey="name"
-                innerRadius={60}
+                innerRadius={0}
                 outerRadius={100}
-                paddingAngle={2}
+                paddingAngle={1}
+                isAnimationActive
+                animationBegin={150}
+                animationDuration={950}
+                animationEasing="ease-out"
               >
                 {data.map((item) => (
                   <Cell key={item.category_id} fill={item.color} />

@@ -1,4 +1,5 @@
 import React from "react";
+import { TrendingDown, TrendingUp } from "lucide-react";
 import { formatMoney } from "../../../../utils/formatMoney";
 import styles from "./CategoryBreakdownTable.module.css";
 import type { CategoryReportItem } from "../../types/report";
@@ -38,9 +39,12 @@ const CategoryBreakdownTable: React.FC<CategoryBreakdownTableProps> = ({ data })
                   </td>
                   <td className={styles.amount}>{formatMoney(item.amount)}</td>
                   <td>{item.percentage.toFixed(1)}%</td>
-                  <td className={isIncrease ? styles.increase : styles.decrease}>
-                    {isIncrease ? "+" : ""}
-                    {item.previous_change}%
+                  <td>
+                    <span className={isIncrease ? styles.increase : styles.decrease}>
+                      {isIncrease ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+                      {isIncrease ? "+" : ""}
+                      {item.previous_change}%
+                    </span>
                   </td>
                 </tr>
               );

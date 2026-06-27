@@ -17,6 +17,13 @@ const decryptAmount = (value, userId) => {
   return isEncryptedValue(decrypted) ? null : Number(decrypted) || 0;
 };
 
+const buildTransactionResponse = (transaction, userId) => ({
+  ...transaction,
+  amount: decryptAmount(transaction.amount, userId) ?? 0,
+  note: decryptText(transaction.note, userId) || '',
+  category_name: decryptText(transaction.category_name, userId) || transaction.category_name || '',
+});
+
 const getWalletBalance = async (walletId, userId, excludedTransactionId = null) => {
   const [wallets] = await pool.query(
     'SELECT initial_balance FROM wallets WHERE wallet_id = ? AND user_id = ?',
@@ -70,11 +77,7 @@ const getTransactions = async (req, res, next) => {
       [userId]
     );
 
-    const result = rows.map((t) => ({
-      ...t,
-      amount: decryptAmount(t.amount, userId) ?? 0,
-      note: decryptText(t.note, userId) || '',
-    }));
+    const result = rows.map((t) => buildTransactionResponse(t, userId));
 
     return success(res, result);
   } catch (err) {
@@ -111,11 +114,7 @@ const createTransaction = async (req, res, next) => {
       [result.insertId]
     );
 
-    const response = {
-      ...rows[0],
-      amount: decryptAmount(rows[0].amount, userId) ?? 0,
-      note: decryptText(rows[0].note, userId) || '',
-    };
+    const response = buildTransactionResponse(rows[0], userId);
 
     await evaluateBudgets(userId, category_id, rows[0].transaction_date);
 
@@ -214,11 +213,7 @@ const updateTransaction = async (req, res, next) => {
       [transactionId, userId]
     );
 
-    const response = {
-      ...rows[0],
-      amount: decryptAmount(rows[0].amount, userId) ?? 0,
-      note: decryptText(rows[0].note, userId) || '',
-    };
+    const response = buildTransactionResponse(rows[0], userId);
 
     await evaluateBudgets(userId, nextCategoryId, rows[0].transaction_date);
 

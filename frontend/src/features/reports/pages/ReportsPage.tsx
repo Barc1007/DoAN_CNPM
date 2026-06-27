@@ -1,4 +1,5 @@
 import React from "react";
+import { Download, Filter } from "lucide-react";
 import MainLayout from "../../../layouts/MainLayout";
 import ReportPeriodTabs from "../components/ReportPeriodTabs/ReportPeriodTabs";
 import ReportSummaryCards from "../components/ReportSummaryCards/ReportSummaryCards";
@@ -21,6 +22,24 @@ const ReportsPage: React.FC = () => {
   return (
     <MainLayout>
       <div className={styles.page}>
+        <header className={styles.header}>
+          <div>
+            <h1>Báo cáo & Thống kê <span aria-hidden="true">📊</span></h1>
+            <p>Phân tích chi tiết thu chi và xu hướng tài chính</p>
+          </div>
+
+          <div className={styles.actions}>
+            <button type="button" className={styles.filterButton}>
+              <Filter size={18} />
+              Lọc
+            </button>
+            <button type="button" className={styles.exportButton}>
+              <Download size={18} />
+              Xuất báo cáo
+            </button>
+          </div>
+        </header>
+
         <ReportPeriodTabs activePeriod={period} onPeriodChange={setPeriod} />
 
         {isLoading && <div className={styles.state}>Đang tải dữ liệu báo cáo...</div>}
