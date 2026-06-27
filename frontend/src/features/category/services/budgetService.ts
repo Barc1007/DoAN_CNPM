@@ -20,6 +20,9 @@ export interface BudgetResponse {
   end_date: string;
   alert: number;
   category_name?: string;
+  usage_percent?: number;
+  is_active?: boolean;
+  is_expired?: boolean;
 }
 
 export const budgetService = {

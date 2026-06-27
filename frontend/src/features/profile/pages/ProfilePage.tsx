@@ -5,7 +5,6 @@ import styles from "./ProfilePage.module.css";
 import { useProfileData } from "../hooks/useProfileData";
 import ProfileBanner from "../components/ProfileBanner";
 import PersonalInfo from "../components/PersonalInfo";
-import StudentInfo from "../components/StudentInfo";
 import SecuritySection from "../components/SecuritySection";
 
 const ProfilePage: React.FC = () => {
@@ -76,11 +75,6 @@ const ProfilePage: React.FC = () => {
         <div className={styles.content}>
           <ProfileBanner profile={profileData} />
           <PersonalInfo 
-            profile={profileData} 
-            isEditing={isEditing} 
-            onInputChange={handleInputChange} 
-          />
-          <StudentInfo 
             profile={profileData} 
             isEditing={isEditing} 
             onInputChange={handleInputChange} 

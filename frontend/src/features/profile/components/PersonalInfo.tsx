@@ -1,5 +1,5 @@
 import React from "react";
-import { User, Mail, Phone, Calendar, MapPin } from "lucide-react";
+import { User, Mail } from "lucide-react";
 import styles from "./PersonalInfo.module.css";
 import type { UserProfile } from "../../../types/profile";
 
@@ -48,48 +48,6 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({ profile, isEditing = false,
               disabled={!isEditing} 
               className={styles.input}
               onChange={(e) => handleChange("email", e.target.value)}
-            />
-          </div>
-        </div>
-
-        <div className={styles.inputGroup}>
-          <label className={styles.label}>Số điện thoại</label>
-          <div className={`${styles.inputWrapper} ${isEditing ? styles.activeInput : ""}`}>
-            <Phone size={18} className={styles.inputIcon} />
-            <input 
-              type="text" 
-              value={profile.phone || ""} 
-              disabled={!isEditing} 
-              className={styles.input}
-              onChange={(e) => handleChange("phone", e.target.value)}
-            />
-          </div>
-        </div>
-
-        <div className={styles.inputGroup}>
-          <label className={styles.label}>Ngày sinh</label>
-          <div className={`${styles.inputWrapper} ${isEditing ? styles.activeInput : ""}`}>
-            <Calendar size={18} className={styles.inputIcon} />
-            <input 
-              type="text" 
-              value={profile.dob || ""} 
-              disabled={!isEditing} 
-              className={styles.input}
-              onChange={(e) => handleChange("dob", e.target.value)}
-            />
-          </div>
-        </div>
-
-        <div className={styles.inputGroup}>
-          <label className={styles.label}>Địa chỉ</label>
-          <div className={`${styles.inputWrapper} ${isEditing ? styles.activeInput : ""}`}>
-            <MapPin size={18} className={styles.inputIcon} />
-            <input 
-              type="text" 
-              value={profile.address || ""} 
-              disabled={!isEditing} 
-              className={styles.input}
-              onChange={(e) => handleChange("address", e.target.value)}
             />
           </div>
         </div>

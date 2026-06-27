@@ -3,7 +3,7 @@ import { X } from "lucide-react";
 import { categoryService } from "../../../category/services/categoryService";
 import { budgetService } from "../../../category/services/budgetService";
 import type { BudgetPayload } from "../../../category/services/budgetService";
-import type { Category } from "../../../types/category";
+import type { Category } from "../../../../types/category";
 import styles from "./AddBudgetModal.module.css";
 
 interface AddBudgetModalProps {

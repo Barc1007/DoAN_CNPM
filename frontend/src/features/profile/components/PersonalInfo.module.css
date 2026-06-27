@@ -37,10 +37,6 @@
   gap: 8px;
 }
 
-.inputGroup:last-child {
-  grid-column: 1 / -1; /* Full width for the last item (address) */
-}
-
 .label {
   font-size: 14px;
   color: #6b7280;
