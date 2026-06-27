@@ -287,6 +287,25 @@
   color: var(--color-primary-dark);
 }
 
+.quickActions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.quickActions .editCategoryButton {
+  margin-top: 0;
+}
+
+.deleteTextButton {
+  color: #dc2626;
+}
+
+.deleteTextButton:hover {
+  color: #b91c1c;
+}
+
 @media (max-width: 740px) {
   .card {
     padding: 20px;
@@ -317,6 +336,10 @@
 
   .editor {
     grid-template-columns: 1fr;
+  }
+
+  .quickActions {
+    gap: 14px;
   }
 }
 

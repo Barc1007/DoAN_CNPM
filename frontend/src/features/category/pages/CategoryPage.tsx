@@ -20,10 +20,27 @@ const CategoryPage: React.FC = () => {
     updateCategoryBudget,
     updateCategoryName,
     addCategory,
+    deleteCategory,
   } = useCategoryData("expense");
 
   const handleViewTransactions = (categoryName: string) => {
     navigate(`/transactions?category=${encodeURIComponent(categoryName)}`);
+  };
+
+  const handleDeleteCategory = async (categoryId: number, categoryName: string) => {
+    const confirmed = window.confirm(
+      `Xoá danh mục "${categoryName}"? Hệ thống sẽ không xoá nếu danh mục đã có giao dịch liên quan.`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await deleteCategory(categoryId);
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : "Không thể xoá danh mục");
+    }
   };
 
   if (isLoading) {
@@ -62,6 +79,7 @@ const CategoryPage: React.FC = () => {
                   category={category}
                   onUpdateBudget={updateCategoryBudget}
                   onUpdateCategoryName={updateCategoryName}
+                  onDeleteCategory={handleDeleteCategory}
                   onViewTransactions={handleViewTransactions}
                 />
               ))}

@@ -128,16 +128,54 @@ export const useCategoryData = (initialType: CategoryType = "expense") => {
     }
   };
 
-  const addCategory = async (name: string, categoryType: CategoryType = type) => {
+  const addCategory = async (
+    name: string,
+    categoryType: CategoryType = type,
+    budgetLimit?: number
+  ) => {
     const trimmedName = name.trim();
     if (!trimmedName) {
-      throw new Error("Vui lòng nhập tên danh mục");
+      throw new Error("Tên danh mục không được để trống");
+    }
+
+    if (trimmedName.length < 2 || trimmedName.length > 50) {
+      throw new Error("Tên danh mục phải từ 2 đến 50 ký tự");
+    }
+
+    if (!["expense", "income"].includes(categoryType)) {
+      throw new Error("Vui lòng chọn loại danh mục");
+    }
+
+    if (
+      categoryType === type &&
+      data?.categories.some(
+        (category) =>
+          category.type === categoryType &&
+          category.name.trim().toLowerCase() === trimmedName.toLowerCase()
+      )
+    ) {
+      throw new Error("Danh mục này đã tồn tại");
+    }
+
+    if (
+      budgetLimit !== undefined &&
+      (!Number.isFinite(budgetLimit) || budgetLimit < 0)
+    ) {
+      throw new Error("Ngân sách phải là số hợp lệ và không nhỏ hơn 0");
     }
 
     await categoryService.createCategory({
       name: trimmedName,
       type: categoryType,
+      ...(categoryType === "expense" && budgetLimit !== undefined
+        ? { budget_limit: budgetLimit }
+        : {}),
     });
+    await fetchCategoryData();
+  };
+
+  const deleteCategory = async (categoryId: number) => {
+    await categoryService.deleteCategory(categoryId);
     await fetchCategoryData();
   };
 
@@ -150,6 +188,7 @@ export const useCategoryData = (initialType: CategoryType = "expense") => {
     updateCategoryBudget,
     updateCategoryName,
     addCategory,
+    deleteCategory,
     refetch: fetchCategoryData,
   };
 };

@@ -36,7 +36,15 @@ export const categoryService = {
     return apiClient.put<unknown, unknown>(`/categories/${categoryId}`, { name });
   },
 
-  createCategory: async (payload: { name: string; type: CategoryType }): Promise<Category> => {
+  createCategory: async (payload: {
+    name: string;
+    type: CategoryType;
+    budget_limit?: number;
+  }): Promise<Category> => {
     return apiClient.post<unknown, Category>("/categories", payload);
+  },
+
+  deleteCategory: async (categoryId: number): Promise<void> => {
+    await apiClient.delete(`/categories/${categoryId}`);
   },
 };

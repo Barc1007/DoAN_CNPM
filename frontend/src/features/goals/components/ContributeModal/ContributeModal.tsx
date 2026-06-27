@@ -64,6 +64,9 @@ const ContributeModal: React.FC<ContributeModalProps> = ({ goal, onClose, onCont
   const insufficientBalance =
     selectedWallet !== null && parsedAmount > selectedWallet.current_balance;
 
+  const formatWarningAmount = (value: number) =>
+    `${value.toLocaleString("vi-VN")}đ`;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -79,6 +82,16 @@ const ContributeModal: React.FC<ContributeModalProps> = ({ goal, onClose, onCont
     if (insufficientBalance) {
       setError("Số dư ví không đủ để góp");
       return;
+    }
+
+    const exceededAmount = goal.current_amount + parsedAmount - goal.target_amount;
+    if (exceededAmount > 0) {
+      const shouldContinue = window.confirm(
+        `Số tiền góp sẽ làm mục tiêu vượt ${formatWarningAmount(exceededAmount)}. Bạn có muốn tiếp tục không?`
+      );
+      if (!shouldContinue) {
+        return;
+      }
     }
 
     try {

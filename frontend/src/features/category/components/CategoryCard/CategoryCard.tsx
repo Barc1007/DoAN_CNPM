@@ -14,6 +14,7 @@ import {
   Receipt,
   ShoppingBag,
   SlidersHorizontal,
+  Trash2,
   Utensils,
   X,
 } from "lucide-react";
@@ -25,6 +26,7 @@ interface CategoryCardProps {
   category: CategoryStat;
   onUpdateBudget: (categoryId: number, budgetLimit: number) => void;
   onUpdateCategoryName: (categoryId: number, name: string) => void;
+  onDeleteCategory: (categoryId: number, categoryName: string) => void;
   onViewTransactions: (categoryName: string) => void;
 }
 
@@ -50,6 +52,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
   category,
   onUpdateBudget,
   onUpdateCategoryName,
+  onDeleteCategory,
   onViewTransactions,
 }) => {
   const [editingMode, setEditingMode] = useState<"budget" | "name" | null>(null);
@@ -167,7 +170,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
             className={styles.iconButton}
             type="button"
             aria-label={isExpense ? `Sửa ngân sách ${category.name}` : `Sửa danh mục ${category.name}`}
-            title={isExpense ? "Sửa ngân sách" : "Sửa danh mục"}
+            title={isExpense ? "Sửa ngân sách" : "Sửa tên danh mục"}
             onClick={isExpense ? startBudgetEdit : startNameEdit}
           >
             {isExpense ? <SlidersHorizontal size={16} /> : <Pencil size={16} />}
@@ -263,12 +266,20 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
         </form>
       )}
 
-      {isExpense && (
+      <div className={styles.quickActions}>
         <button className={styles.editCategoryButton} type="button" onClick={startNameEdit}>
           <Pencil size={14} />
-          <span>Sửa danh mục</span>
+          <span>Sửa tên</span>
         </button>
-      )}
+        <button
+          className={`${styles.editCategoryButton} ${styles.deleteTextButton}`}
+          type="button"
+          onClick={() => onDeleteCategory(category.category_id, category.name)}
+        >
+          <Trash2 size={14} />
+          <span>Xoá</span>
+        </button>
+      </div>
     </article>
   );
 };
