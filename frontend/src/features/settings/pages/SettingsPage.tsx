@@ -64,8 +64,7 @@ const SettingsPage: React.FC = () => {
         setPwMsg(null);
       }, 1500);
     } catch (err: unknown) {
-      const e = err as { response?: { data?: { message?: string } } };
-      const msg = e?.response?.data?.message || "Đổi mật khẩu thất bại";
+      const msg = err instanceof Error ? err.message : "Đổi mật khẩu thất bại";
       setPwMsg({ ok: false, text: msg });
     } finally {
       setPwLoading(false);
