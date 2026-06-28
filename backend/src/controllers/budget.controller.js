@@ -107,9 +107,7 @@ const createBudget = async (req, res, next) => {
       usage_percent: 0,
     };
 
-    if (category_id) {
-      await evaluateBudgets(userId, category_id, start_date);
-    }
+    await evaluateBudgets(userId, category_id || null);
 
     return success(res, response, 'Tạo ngân sách thành công', 201);
   } catch (err) {
@@ -162,9 +160,7 @@ const updateBudget = async (req, res, next) => {
       spent_amount: Number(decrypt(b.spent_amount, userId)) || 0,
     };
 
-    if (b.category_id) {
-      await evaluateBudgets(b.user_id, b.category_id, b.start_date);
-    }
+    await evaluateBudgets(b.user_id, b.category_id || null);
 
     return success(res, response, 'Cập nhật ngân sách thành công');
   } catch (err) {

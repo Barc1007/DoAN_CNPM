@@ -33,6 +33,7 @@ const BudgetCard: React.FC<BudgetCardProps> = ({ budget, index = 0, onEdit, onDe
   const remaining = limit_amount - spent_amount;
   const isOver = usage_percent >= 100;
   const isNear = !isOver && usage_percent >= alert;
+  const displayUsagePercent = Math.min(Math.max(usage_percent, 0), 100);
   const tone = toneOptions[index % toneOptions.length];
 
   const progressColor = isOver ? "#ef4444" : isNear ? "#f59e0b" : toneMap[tone];
@@ -76,7 +77,7 @@ const BudgetCard: React.FC<BudgetCardProps> = ({ budget, index = 0, onEdit, onDe
           className={`${styles.percent} ${isOver ? styles.percentOver : ""}`}
           style={{ color: isOver ? undefined : progressColor }}
         >
-          {isOver ? (usage_percent - 100).toFixed(1) : usage_percent.toFixed(1)}%
+          {displayUsagePercent.toFixed(1)}%
         </span>
       </div>
 
@@ -87,7 +88,7 @@ const BudgetCard: React.FC<BudgetCardProps> = ({ budget, index = 0, onEdit, onDe
         <div
           className={styles.fill}
           style={{
-            width: `${Math.min(usage_percent, 100)}%`,
+            width: `${displayUsagePercent}%`,
             background: progressColor,
             borderTopRightRadius: usage_percent >= 100 ? 999 : 0,
             borderBottomRightRadius: usage_percent >= 100 ? 999 : 0,

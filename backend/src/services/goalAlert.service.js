@@ -3,11 +3,33 @@ const { encrypt, decrypt } = require('../utils/crypto');
 
 const toBool = (v) => v === 1 || v === '1' || v === true || v === 'true';
 
-const todayDateOnly = () => new Date().toISOString().slice(0, 10);
+const toDateParts = (value) => {
+  if (value instanceof Date) {
+    return {
+      year: value.getFullYear(),
+      month: value.getMonth() + 1,
+      day: value.getDate(),
+    };
+  }
+
+  const raw = String(value).slice(0, 10);
+  const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return null;
+
+  return {
+    year: Number(match[1]),
+    month: Number(match[2]),
+    day: Number(match[3]),
+  };
+};
 
 const diffDays = (dateStr) => {
-  const today = new Date(todayDateOnly());
-  const target = new Date(dateStr.toString().slice(0, 10));
+  const todayParts = toDateParts(new Date());
+  const targetParts = toDateParts(dateStr);
+  if (!targetParts) return null;
+
+  const today = Date.UTC(todayParts.year, todayParts.month - 1, todayParts.day);
+  const target = Date.UTC(targetParts.year, targetParts.month - 1, targetParts.day);
   return Math.round((target - today) / (1000 * 60 * 60 * 24));
 };
 
@@ -100,6 +122,8 @@ const evaluateGoalDeadlines = async (userId) => {
       if (target > 0 && current >= target) continue;
 
       const daysLeft = diffDays(goal.end_date);
+      if (daysLeft === null) continue;
+
       const payload = buildGoalAlertPayload(goal, userId, daysLeft);
       if (!payload) continue;
 

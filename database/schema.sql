@@ -124,6 +124,20 @@ CREATE TABLE notifications (
  
   INDEX idx_notif_user_unread (user_id, is_read)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE user_settings (
+  user_id            INT          NOT NULL,
+  dark_mode          TINYINT(1)   NOT NULL DEFAULT 0,
+  tx_notifications   TINYINT(1)   NOT NULL DEFAULT 1,
+  budget_reminders   TINYINT(1)   NOT NULL DEFAULT 1,
+  auto_backup        TINYINT(1)   NOT NULL DEFAULT 0,
+  updated_at         DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+                      ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (user_id),
+  CONSTRAINT FK_settings_user
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
  
 CREATE TABLE goals (
   goal_id        INT           NOT NULL AUTO_INCREMENT,

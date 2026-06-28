@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { 
   Home, 
   Wallet, 
@@ -16,6 +16,7 @@ import styles from "./Sidebar.module.css";
 import clsx from "clsx";
 import { useAuth } from "../features/auth/context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
+import { notificationService } from "../features/notifications/services/notificationService";
 
 interface NavItem {
   icon: React.ElementType;
@@ -39,6 +40,33 @@ const Sidebar: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadUnreadNotifications = async () => {
+      if (!user?.token) {
+        setUnreadNotifications(0);
+        return;
+      }
+
+      try {
+        const notifications = await notificationService.getNotifications();
+        if (!cancelled) {
+          setUnreadNotifications(notifications.filter((item) => !item.is_read).length);
+        }
+      } catch {
+        if (!cancelled) setUnreadNotifications(0);
+      }
+    };
+
+    loadUnreadNotifications();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [location.pathname, user?.token]);
 
   const handleLogout = () => {
     logout();
@@ -78,7 +106,12 @@ const Sidebar: React.FC = () => {
                   }}
                 >
                   <item.icon size={20} />
-                  <span>{item.label}</span>
+                  <span className={styles.navLabel}>{item.label}</span>
+                  {item.path === "/notifications" && unreadNotifications > 0 && (
+                    <span className={styles.notificationBadge}>
+                      {unreadNotifications > 99 ? "99+" : unreadNotifications}
+                    </span>
+                  )}
                 </a>
               </li>
             );

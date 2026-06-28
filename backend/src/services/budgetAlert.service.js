@@ -1,6 +1,8 @@
 const pool = require('../config/db');
 const { encrypt, decrypt } = require('../utils/crypto');
 
+const BUDGET_ALERT_THRESHOLD = 80;
+
 const toBool = (v) => v === 1 || v === '1' || v === true || v === 'true';
 
 const toDateString = (v) => {
@@ -37,14 +39,22 @@ const computeBudgetSpent = async (budget, userId) => {
 
 const findActiveBudgetsForCategory = async (userId, categoryId, atDate) => {
   const day = toDateString(atDate);
+  const params = [userId, day, day];
+  let filterSql = '';
+
+  if (categoryId !== undefined) {
+    filterSql = 'AND (category_id IS NULL OR category_id = ?)';
+    params.push(categoryId);
+  }
+
   const [rows] = await pool.query(
     `SELECT budget_id, user_id, category_id, name, limit_amount, start_date, end_date, alert
      FROM budgets
      WHERE user_id = ?
        AND start_date <= ?
        AND end_date >= ?
-       AND (category_id IS NULL OR category_id = ?)`,
-    [userId, day, day, categoryId]
+       ${filterSql}`,
+    params
   );
   return rows;
 };
@@ -66,9 +76,14 @@ const hasRecentAlert = async (userId, budgetId, severity) => {
 const formatVnd = (value) =>
   new Intl.NumberFormat('vi-VN').format(Math.round(value)) + ' VND';
 
+const formatPercent = (value) => {
+  const rounded = Math.round(value * 10) / 10;
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
+};
+
 const buildAlertPayload = (budget, spent, limit, level) => {
   const over = spent - limit;
-  const percent = limit > 0 ? Math.round((spent / limit) * 100) : 0;
+  const percent = limit > 0 ? formatPercent((spent / limit) * 100) : '0';
   const name = decrypt(budget.name, budget.user_id);
   const tag = level === 'over'
     ? `[budget:${budget.budget_id}:over]`
@@ -95,7 +110,7 @@ const insertNotification = async (userId, title, message) => {
   );
 };
 
-const evaluateBudgets = async (userId, categoryId, atDate) => {
+const evaluateBudgets = async (userId, categoryId, atDate = new Date()) => {
   try {
     const [settingsRows] = await pool.query(
       'SELECT budget_reminders FROM user_settings WHERE user_id = ?',
@@ -113,11 +128,10 @@ const evaluateBudgets = async (userId, categoryId, atDate) => {
 
       const spent = await computeBudgetSpent(budget, userId);
       const percent = (spent / limit) * 100;
-      const alertThreshold = Number(budget.alert) || 80;
 
       let level = null;
       if (percent >= 100) level = 'over';
-      else if (percent >= alertThreshold) level = 'near';
+      else if (percent >= BUDGET_ALERT_THRESHOLD) level = 'near';
 
       if (!level) continue;
 
@@ -132,4 +146,8 @@ const evaluateBudgets = async (userId, categoryId, atDate) => {
   }
 };
 
-module.exports = { evaluateBudgets };
+const evaluateCurrentBudgets = async (userId) => {
+  await evaluateBudgets(userId, undefined, new Date());
+};
+
+module.exports = { evaluateBudgets, evaluateCurrentBudgets };

@@ -65,6 +65,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
   const usedRate = budgetLimit > 0 ? category.total_amount / budgetLimit : 0;
   const percentage = isExpense ? usedRate * 100 : category.percentage;
   const progressPercent = Math.min(Math.round(percentage), 100);
+  const displayPercentage = Math.min(Math.max(percentage, 0), 100);
 
   const status = useMemo(() => {
     if (!isExpense) {
@@ -222,7 +223,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
         </div>
         <div className={styles.rate}>
           <span>Tỷ lệ</span>
-          <strong>{isExpense && budgetLimit <= 0 ? "0%" : `${percentage.toFixed(1)}%`}</strong>
+          <strong>{isExpense && budgetLimit <= 0 ? "0%" : `${displayPercentage.toFixed(1)}%`}</strong>
         </div>
       </div>
 

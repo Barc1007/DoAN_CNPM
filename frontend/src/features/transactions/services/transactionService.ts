@@ -1,6 +1,11 @@
 import apiClient from "../../../services/apiClient";
 import type { Transaction, TransactionStats } from "../types/transaction";
 
+type CreateTransactionPayload = Omit<
+  Transaction,
+  "transaction_id" | "category_name" | "icon_name"
+>;
+
 const IS_MOCK = false;
 
 export const transactionService = {
@@ -23,9 +28,7 @@ export const transactionService = {
     return response;
   },
 
-  createTransaction: async (
-    payload: Omit<Transaction, "transaction_id">
-  ): Promise<Transaction> => {
+  createTransaction: async (payload: CreateTransactionPayload): Promise<Transaction> => {
     if (IS_MOCK) {
       const { MOCK_TRANSACTIONS } = await import("../../../data/mockTransactions");
       await new Promise((resolve) => setTimeout(resolve, 800));
@@ -33,6 +36,8 @@ export const transactionService = {
       const newTransaction: Transaction = {
         ...payload,
         transaction_id: Date.now(),
+        category_name: "",
+        icon_name: "",
       };
 
       MOCK_TRANSACTIONS.push(newTransaction);

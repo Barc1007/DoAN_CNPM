@@ -57,6 +57,7 @@ const BudgetPage: React.FC = () => {
         <div className={styles.grid}>
           {budgets.map((b) => {
             const pct = b.usage_percent ?? 0;
+            const displayPct = Math.min(Math.max(pct, 0), 100);
             const overAlert = pct >= (b.alert ?? 80);
             return (
               <div key={b.budget_id} className={styles.card}>
@@ -68,7 +69,7 @@ const BudgetPage: React.FC = () => {
                 <div className={styles.progressBar}>
                   <div
                     className={`${styles.progressFill} ${overAlert ? styles.progressDanger : ""}`}
-                    style={{ width: `${Math.min(100, pct)}%` }}
+                    style={{ width: `${displayPct}%` }}
                   />
                 </div>
                 <p className={styles.amountRow}>
@@ -76,7 +77,7 @@ const BudgetPage: React.FC = () => {
                   <span>/ {Number(b.limit_amount).toLocaleString("vi-VN")} đ</span>
                 </p>
                 <p className={styles.meta}>
-                  {pct}% đã dùng · {formatShortDate(b.start_date)} → {formatShortDate(b.end_date)}
+                  {displayPct}% đã dùng · {formatShortDate(b.start_date)} → {formatShortDate(b.end_date)}
                 </p>
               </div>
             );

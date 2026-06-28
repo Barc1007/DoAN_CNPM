@@ -1,10 +1,17 @@
 const pool = require('../config/db');
 const { success, error } = require('../utils/response');
 const { decrypt } = require('../utils/crypto');
+const { evaluateGoalDeadlines } = require('../services/goalAlert.service');
+const { evaluateCurrentBudgets } = require('../services/budgetAlert.service');
 
 const getNotifications = async (req, res, next) => {
   try {
     const userId = req.user.user_id;
+
+    await Promise.all([
+      evaluateGoalDeadlines(userId),
+      evaluateCurrentBudgets(userId),
+    ]);
 
     const [rows] = await pool.query(
       `SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC`,
