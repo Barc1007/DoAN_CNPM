@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Lock, ChevronRight, Eye, EyeOff } from "lucide-react";
 import styles from "./SecuritySection.module.css";
+import apiClient from "../../../services/apiClient";
 
 const SecuritySection: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
@@ -27,19 +28,19 @@ const SecuritySection: React.FC = () => {
 
     setLoading(true);
     try {
-      // TODO: Gọi API đổi mật khẩu
-      console.log("Change password:", { currentPassword, newPassword });
-      
-      // Giả lập thành công
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await apiClient.post('/auth/change-password', {
+        current_password: currentPassword,
+        new_password: newPassword,
+      });
 
       setMessage({ type: "success", text: "Đổi mật khẩu thành công!" });
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-      setShowForm(false);
-    } catch {
-      setMessage({ type: "error", text: "Đổi mật khẩu thất bại. Vui lòng thử lại." });
+      setTimeout(() => setShowForm(false), 1500);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Đổi mật khẩu thất bại. Vui lòng thử lại.";
+      setMessage({ type: "error", text: msg });
     } finally {
       setLoading(false);
     }

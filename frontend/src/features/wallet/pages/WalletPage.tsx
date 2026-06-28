@@ -11,7 +11,17 @@ import type { Wallet } from "../types/wallet";
 import styles from "./WalletPage.module.css";
 
 const WalletPage: React.FC = () => {
-  const { wallets, totalBalance, activeCount, isLoading, error, setWallets, deleteWallet } =
+  const {
+    wallets,
+    totalBalance,
+    activeCount,
+    isLoading,
+    error,
+    actionMessage,
+    clearActionMessage,
+    setWallets,
+    deleteWallet,
+  } =
     useWallets();
   const [showModal, setShowModal] = useState(false);
   const [editingWallet, setEditingWallet] = useState<Wallet | null>(null);
@@ -58,6 +68,7 @@ const WalletPage: React.FC = () => {
               wallet={wallet}
               onEdit={(w) => setEditingWallet(w)}
               onDelete={(w) => {
+                clearActionMessage();
                 if (window.confirm(`Xoá ví "${w.name}"?`)) {
                   deleteWallet(w.wallet_id);
                 }
@@ -81,6 +92,19 @@ const WalletPage: React.FC = () => {
           onClose={() => setEditingWallet(null)}
           onUpdated={handleWalletUpdated}
         />
+      )}
+
+      {actionMessage && (
+        <div className={styles.popupOverlay} role="presentation" onClick={clearActionMessage}>
+          <div className={styles.popup} role="alertdialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+            <div className={styles.popupIcon}>!</div>
+            <h3>Không thể xoá ví</h3>
+            <p>{actionMessage}</p>
+            <button type="button" onClick={clearActionMessage}>
+              Đã hiểu
+            </button>
+          </div>
+        </div>
       )}
     </MainLayout>
   );

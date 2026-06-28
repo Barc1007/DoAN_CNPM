@@ -68,6 +68,7 @@ const EditGoalModal: React.FC<EditGoalModalProps> = ({ goal, onClose, onUpdated,
   const handleDelete = async () => {
     try {
       setLoading(true);
+      await goalApi.deleteGoal(goal.goal_id);
       if (onDeleted) onDeleted(goal.goal_id);
       onClose();
     } catch (err: unknown) {

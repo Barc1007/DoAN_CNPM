@@ -2,6 +2,10 @@ const pool = require('../config/db');
 const { success } = require('../utils/response');
 const { decrypt } = require('../utils/crypto');
 
+const log = (...args) => {
+  console.log('[dashboard.controller]', ...args);
+};
+
 const buildSavingsGoal = (goal, userId) => {
   const target = Number(decrypt(goal.target_amount, userId)) || 0;
   const current = Number(decrypt(goal.current_amount, userId)) || 0;
@@ -27,9 +31,16 @@ const buildSavingsGoal = (goal, userId) => {
   };
 };
 
+const decryptText = (value, userId) => {
+  const decrypted = decrypt(value, userId);
+  const stillEncrypted = typeof decrypted === 'string' && /^[a-f0-9]{32}:[a-f0-9]+$/i.test(decrypted);
+  return stillEncrypted ? '' : decrypted;
+};
+
 const getDashboardSummary = async (req, res, next) => {
   try {
     const userId = req.query.user_id || req.user.user_id;
+    log('getDashboardSummary start, userId=', userId);
 
     const [walletRows] = await pool.query(
       'SELECT * FROM v_wallet_balance WHERE user_id = ?',
@@ -55,8 +66,33 @@ const getDashboardSummary = async (req, res, next) => {
         if (t.type === 'income') income += amount;
         else expense += amount;
       }
-      totalBalance += initialBalance + income - expense;
+
+      const [goalContribs] = await pool.query(
+        `SELECT gc.amount, gc.wallet_id AS contrib_wallet_id, g.wallet_id AS goal_wallet_id
+         FROM goal_contributions gc
+         JOIN goals g ON gc.goal_id = g.goal_id
+         WHERE gc.wallet_id = ? OR g.wallet_id = ?`,
+        [w.wallet_id, w.wallet_id]
+      );
+
+      let contributedToGoals = 0;
+      for (const gc of goalContribs) {
+        const amt = Number(decrypt(gc.amount, userId)) || 0;
+        contributedToGoals += amt;
+      }
+      log(`dashboard wallet ${w.wallet_id} contributedToGoals=`, contributedToGoals);
+
+      const walletBalance = initialBalance + income - expense - contributedToGoals;
+      log(`dashboard wallet ${w.wallet_id} balance=`, {
+        initialBalance,
+        income,
+        expense,
+        contributedToGoals,
+        walletBalance,
+      });
+      totalBalance += walletBalance;
     }
+    log('totalBalance=', totalBalance);
 
     const [allTransactions] = await pool.query(
       `SELECT t.amount, c.type
@@ -83,6 +119,7 @@ const getDashboardSummary = async (req, res, next) => {
       ...t,
       amount: Number(decrypt(t.amount, userId)) || 0,
       note: decrypt(t.note, userId) || '',
+      category_name: decryptText(t.category_name, userId) || t.category_name || '',
     }));
 
     const [categorySpent] = await pool.query(
@@ -97,7 +134,10 @@ const getDashboardSummary = async (req, res, next) => {
     for (const row of categorySpent) {
       const amount = Number(decrypt(row.amount, userId)) || 0;
       if (!categoryMap[row.category_id]) {
-        categoryMap[row.category_id] = { name: row.name, amount: 0 };
+        categoryMap[row.category_id] = {
+          name: decryptText(row.name, userId) || row.name,
+          amount: 0,
+        };
       }
       categoryMap[row.category_id].amount += amount;
     }

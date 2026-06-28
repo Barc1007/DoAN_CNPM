@@ -1,0 +1,87 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 26px;
+}
+
+.card {
+  min-height: 120px;
+  border-radius: 22px;
+  padding: 26px;
+  color: var(--color-white);
+  box-shadow: 0 20px 38px rgba(15, 23, 42, 0.16);
+  position: relative;
+  overflow: hidden;
+  animation: cardEnter 0.55s ease both;
+}
+
+.card::after {
+  content: "";
+  position: absolute;
+  inset: -30% -10% auto auto;
+  width: 180px;
+  height: 180px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  opacity: 0.9;
+  margin-bottom: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.card strong {
+  display: block;
+  font-size: clamp(24px, 2.4vw, 30px);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  position: relative;
+  z-index: 1;
+}
+
+.income {
+  background: linear-gradient(135deg, #20c997 0%, #1aaa99 100%);
+}
+
+.expense {
+  background: linear-gradient(135deg, #ff3d78 0%, #e81978 100%);
+}
+
+.balance {
+  background: linear-gradient(135deg, #4d8df7 0%, #6d4de6 100%);
+}
+
+.saving {
+  background: linear-gradient(135deg, #ff9f12 0%, #ff6f1a 100%);
+}
+
+@keyframes cardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 1040px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,94 @@
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 22px;
+  padding: 28px;
+  box-shadow: 0 18px 34px rgba(15, 23, 42, 0.12);
+  animation: tableEnter 0.55s ease both;
+}
+
+.header {
+  margin-bottom: 14px;
+}
+
+.header h2 {
+  margin: 0;
+  color: var(--color-text-main);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 640px;
+}
+
+.table th,
+.table td {
+  padding: 18px 16px;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+  color: var(--color-text-muted);
+  font-size: 16px;
+}
+
+.table th {
+  color: var(--color-text-main);
+  font-weight: 700;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.categoryName {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-text-main);
+  font-weight: 500;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+}
+
+.amount {
+  color: var(--color-text-main) !important;
+  font-weight: 700;
+}
+
+.increase {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #ff4d5e !important;
+  font-weight: 700;
+}
+
+.decrease {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #08a77a !important;
+  font-weight: 700;
+}
+
+@keyframes tableEnter {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

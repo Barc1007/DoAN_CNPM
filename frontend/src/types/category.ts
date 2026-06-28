@@ -10,9 +10,10 @@ export interface Category {
 
 export interface CategoryStat extends Category {
   transaction_count: number;
-  total_amount: number;      
-  percentage: number;        
+  total_amount: number;
+  percentage: number;
   budget_limit?: number;
+  alert?: number;
 }
 
 export interface CategoryData {

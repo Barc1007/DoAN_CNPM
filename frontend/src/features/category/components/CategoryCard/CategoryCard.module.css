@@ -73,6 +73,24 @@
   font-size: 13px;
   font-weight: 700;
   white-space: nowrap;
+  border: none;
+  font-family: inherit;
+  line-height: 1;
+}
+
+.statusPillButton {
+  cursor: pointer;
+  transition: filter 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+
+.statusPillButton:hover {
+  filter: brightness(0.96);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+}
+
+.statusPillButton:active {
+  transform: translateY(0);
 }
 
 .statusOk {
@@ -239,7 +257,7 @@
   border-top: 1px solid #eef2f7;
   display: grid;
   grid-template-columns: 150px minmax(240px, 1fr);
-  gap: 12px;
+  gap: 10px 12px;
   align-items: center;
 }
 
@@ -287,6 +305,25 @@
   color: var(--color-primary-dark);
 }
 
+.quickActions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.quickActions .editCategoryButton {
+  margin-top: 0;
+}
+
+.deleteTextButton {
+  color: #dc2626;
+}
+
+.deleteTextButton:hover {
+  color: #b91c1c;
+}
+
 @media (max-width: 740px) {
   .card {
     padding: 20px;
@@ -317,6 +354,10 @@
 
   .editor {
     grid-template-columns: 1fr;
+  }
+
+  .quickActions {
+    gap: 14px;
   }
 }
 

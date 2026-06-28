@@ -1,6 +1,7 @@
 const pool = require('../config/db');
 const { success, error } = require('../utils/response');
 const { encrypt, decrypt } = require('../utils/crypto');
+const { evaluateBudgets } = require('../services/budgetAlert.service');
 
 const getBudgets = async (req, res, next) => {
   try {
@@ -17,31 +18,61 @@ const getBudgets = async (req, res, next) => {
       [userId]
     );
 
-    const result = await Promise.all(rows.map(async (b) => {
-      const limitAmount = Number(decrypt(b.limit_amount, userId)) || 0;
+const today = new Date().toISOString().slice(0, 10);
+const toDateString = (v) => {
+  if (v instanceof Date) return v.toISOString().slice(0, 10);
+  if (typeof v === "string") return v.slice(0, 10);
+  return String(v).slice(0, 10);
+};
+const result = await Promise.all(rows.map(async (b) => {
+  const limitAmount = Number(decrypt(b.limit_amount, userId)) || 0;
 
-      let spentAmount = 0;
-      if (b.category_id) {
-        const [transactions] = await pool.query(
-          `SELECT amount FROM transactions
-           WHERE user_id = ? AND category_id = ?
-           AND transaction_date >= ? AND transaction_date <= ?`,
-          [userId, b.category_id, b.start_date, b.end_date + ' 23:59:59']
-        );
-        spentAmount = transactions.reduce((sum, t) => sum + (Number(decrypt(t.amount, userId)) || 0), 0);
-      }
+  let spentAmount = 0;
+  const startStr = toDateString(b.start_date);
+  const endStr = toDateString(b.end_date);
+  const params = [userId, `${startStr} 00:00:00`, `${endStr} 23:59:59`];
 
-      return {
-        ...b,
-        name: decrypt(b.name, userId),
-        limit_amount: limitAmount,
-        spent_amount: spentAmount,
-        alert: Number(b.alert),
-        usage_percent: limitAmount > 0 ? Math.round((spentAmount / limitAmount) * 100 * 100) / 100 : 0,
-      };
-    }));
+  let transactionsQuery = `SELECT t.amount, c.type AS category_type
+                           FROM transactions t
+                           JOIN categories c ON t.category_id = c.category_id
+                           WHERE t.user_id = ?
+                             AND t.transaction_date >= ?
+                             AND t.transaction_date <= ?`;
 
-    return success(res, result);
+  if (b.category_id) {
+    transactionsQuery += ` AND t.category_id = ?`;
+    params.push(b.category_id);
+  } else {
+    transactionsQuery += ` AND c.type = 'expense'`;
+  }
+
+  const [transactions] = await pool.query(transactionsQuery, params);
+  spentAmount = transactions.reduce(
+    (sum, t) =>
+      t.category_type === 'expense'
+        ? sum + (Number(decrypt(t.amount, userId)) || 0)
+        : sum,
+    0
+  );
+
+  const rawUsage = limitAmount > 0 ? (spentAmount / limitAmount) * 100 : 0;
+  const usagePercent = Math.round(rawUsage * 100) / 100;
+  const isActive = startStr <= today && endStr >= today;
+  const isExpired = endStr < today;
+
+  return {
+    ...b,
+    name: decrypt(b.name, userId),
+    limit_amount: limitAmount,
+    spent_amount: spentAmount,
+    alert: Number(b.alert),
+    usage_percent: usagePercent,
+    is_active: isActive,
+    is_expired: isExpired,
+  };
+}));
+
+return success(res, result);
   } catch (err) {
     next(err);
   }
@@ -75,6 +106,8 @@ const createBudget = async (req, res, next) => {
       spent_amount: 0,
       usage_percent: 0,
     };
+
+    await evaluateBudgets(userId, category_id || null);
 
     return success(res, response, 'Tạo ngân sách thành công', 201);
   } catch (err) {
@@ -126,6 +159,8 @@ const updateBudget = async (req, res, next) => {
       limit_amount: Number(decrypt(b.limit_amount, userId)) || 0,
       spent_amount: Number(decrypt(b.spent_amount, userId)) || 0,
     };
+
+    await evaluateBudgets(b.user_id, b.category_id || null);
 
     return success(res, response, 'Cập nhật ngân sách thành công');
   } catch (err) {

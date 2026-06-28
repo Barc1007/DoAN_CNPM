@@ -13,7 +13,7 @@ import {
   Pencil,
   Receipt,
   ShoppingBag,
-  SlidersHorizontal,
+  Trash2,
   Utensils,
   X,
 } from "lucide-react";
@@ -23,8 +23,9 @@ import type { CategoryStat } from "../../../../types/category";
 
 interface CategoryCardProps {
   category: CategoryStat;
-  onUpdateBudget: (categoryId: number, budgetLimit: number) => void;
+  onUpdateBudget: (categoryId: number, budgetLimit: number, alertPercent?: number) => void;
   onUpdateCategoryName: (categoryId: number, name: string) => void;
+  onDeleteCategory: (categoryId: number, categoryName: string) => void;
   onViewTransactions: (categoryName: string) => void;
 }
 
@@ -50,10 +51,12 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
   category,
   onUpdateBudget,
   onUpdateCategoryName,
+  onDeleteCategory,
   onViewTransactions,
 }) => {
   const [editingMode, setEditingMode] = useState<"budget" | "name" | null>(null);
   const [budgetValue, setBudgetValue] = useState(String(category.budget_limit || ""));
+  const [alertValue, setAlertValue] = useState(String(category.alert ?? 80));
   const [nameValue, setNameValue] = useState(category.name);
   const Icon = CATEGORY_ICONS[category.icon || "other"] || MoreHorizontal;
   const isExpense = category.type === "expense";
@@ -62,6 +65,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
   const usedRate = budgetLimit > 0 ? category.total_amount / budgetLimit : 0;
   const percentage = isExpense ? usedRate * 100 : category.percentage;
   const progressPercent = Math.min(Math.round(percentage), 100);
+  const displayPercentage = Math.min(Math.max(percentage, 0), 100);
 
   const status = useMemo(() => {
     if (!isExpense) {
@@ -80,15 +84,16 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
       };
     }
 
-    if (remaining < 0) {
+    if (usedRate >= 1) {
       return {
-        label: "Vượt mức",
+        label: "Hết",
         pillClassName: styles.statusDanger,
         fillClassName: styles.fillDanger,
       };
     }
 
-    if (usedRate >= 0.9) {
+    const alertRatio = (category.alert ?? 80) / 100;
+    if (usedRate >= alertRatio) {
       return {
         label: "Gần hết",
         pillClassName: styles.statusWarning,
@@ -101,17 +106,18 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
       pillClassName: styles.statusOk,
       fillClassName: styles.fillOk,
     };
-  }, [budgetLimit, isExpense, remaining, usedRate]);
+  }, [budgetLimit, category.alert, isExpense, usedRate]);
 
   const handleBudgetSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const nextBudget = Number(budgetValue);
+    const nextAlert = Number(alertValue);
 
     if (!Number.isFinite(nextBudget) || nextBudget < 0) {
       return;
     }
 
-    onUpdateBudget(category.category_id, nextBudget);
+    onUpdateBudget(category.category_id, nextBudget, Number.isFinite(nextAlert) ? nextAlert : undefined);
     setEditingMode(null);
   };
 
@@ -128,6 +134,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
 
   const startBudgetEdit = () => {
     setBudgetValue(String(category.budget_limit || ""));
+    setAlertValue(String(category.alert ?? 80));
     setEditingMode("budget");
   };
 
@@ -153,7 +160,18 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
         </div>
 
         <div className={styles.headerActions}>
-          <span className={`${styles.statusPill} ${status.pillClassName}`}>{status.label}</span>
+          {isExpense ? (
+            <button
+              type="button"
+              className={`${styles.statusPill} ${status.pillClassName} ${styles.statusPillButton}`}
+              onClick={startBudgetEdit}
+              title={budgetLimit > 0 ? "Chỉnh hạn mức & ngưỡng cảnh báo" : "Đặt hạn mức chi tiêu"}
+            >
+              {status.label}
+            </button>
+          ) : (
+            <span className={`${styles.statusPill} ${status.pillClassName}`}>{status.label}</span>
+          )}
           <button
             className={styles.iconButton}
             type="button"
@@ -166,11 +184,11 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
           <button
             className={styles.iconButton}
             type="button"
-            aria-label={isExpense ? `Sửa ngân sách ${category.name}` : `Sửa danh mục ${category.name}`}
-            title={isExpense ? "Sửa ngân sách" : "Sửa danh mục"}
-            onClick={isExpense ? startBudgetEdit : startNameEdit}
+            aria-label={isExpense ? `Sửa tên danh mục ${category.name}` : `Sửa danh mục ${category.name}`}
+            title="Sửa tên danh mục"
+            onClick={startNameEdit}
           >
-            {isExpense ? <SlidersHorizontal size={16} /> : <Pencil size={16} />}
+            <Pencil size={16} />
           </button>
         </div>
       </div>
@@ -205,13 +223,13 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
         </div>
         <div className={styles.rate}>
           <span>Tỷ lệ</span>
-          <strong>{isExpense && budgetLimit <= 0 ? "0%" : `${percentage.toFixed(1)}%`}</strong>
+          <strong>{isExpense && budgetLimit <= 0 ? "0%" : `${displayPercentage.toFixed(1)}%`}</strong>
         </div>
       </div>
 
       {editingMode === "budget" && isExpense && (
         <form className={styles.editor} onSubmit={handleBudgetSubmit}>
-          <label htmlFor={`budget-${category.category_id}`}>Ngân sách tháng</label>
+          <label htmlFor={`budget-${category.category_id}`}>Hạn mức tháng (đ)</label>
           <div className={styles.inputRow}>
             <input
               id={`budget-${category.category_id}`}
@@ -220,8 +238,23 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
               type="number"
               value={budgetValue}
               onChange={(event) => setBudgetValue(event.target.value)}
+              placeholder="Ví dụ: 2000000"
             />
-            <button className={styles.saveButton} type="submit" aria-label="Lưu ngân sách" title="Lưu ngân sách">
+          </div>
+
+          <label htmlFor={`alert-${category.category_id}`}>Cảnh báo khi đạt (%)</label>
+          <div className={styles.inputRow}>
+            <input
+              id={`alert-${category.category_id}`}
+              min={1}
+              max={100}
+              step={1}
+              type="number"
+              value={alertValue}
+              onChange={(event) => setAlertValue(event.target.value)}
+              placeholder="80"
+            />
+            <button className={styles.saveButton} type="submit" aria-label="Lưu ngân sách" title="Lưu">
               <Check size={16} />
             </button>
             <button
@@ -263,12 +296,20 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
         </form>
       )}
 
-      {isExpense && (
+      <div className={styles.quickActions}>
         <button className={styles.editCategoryButton} type="button" onClick={startNameEdit}>
           <Pencil size={14} />
-          <span>Sửa danh mục</span>
+          <span>Sửa tên</span>
         </button>
-      )}
+        <button
+          className={`${styles.editCategoryButton} ${styles.deleteTextButton}`}
+          type="button"
+          onClick={() => onDeleteCategory(category.category_id, category.name)}
+        >
+          <Trash2 size={14} />
+          <span>Xoá</span>
+        </button>
+      </div>
     </article>
   );
 };

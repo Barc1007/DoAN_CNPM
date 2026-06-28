@@ -14,7 +14,6 @@ const AddGoalModal: React.FC<AddGoalModalProps> = ({ onClose, onCreated }) => {
 
   const [name, setName] = useState("");
   const [targetAmount, setTargetAmount] = useState("");
-  const [currentAmount, setCurrentAmount] = useState("0");
   const [endDate, setEndDate] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -28,7 +27,6 @@ const AddGoalModal: React.FC<AddGoalModalProps> = ({ onClose, onCreated }) => {
       return;
     }
     const target = parseFloat(targetAmount.replace(/[^0-9.]/g, ""));
-    const current = parseFloat(currentAmount.replace(/[^0-9.]/g, "")) || 0;
     if (isNaN(target) || target <= 0) {
       setError("Số tiền mục tiêu không hợp lệ");
       return;
@@ -42,7 +40,7 @@ const AddGoalModal: React.FC<AddGoalModalProps> = ({ onClose, onCreated }) => {
         wallet_id: 0,
         name: name.trim(),
         target_amount: target,
-        current_amount: current,
+        current_amount: 0,
         start_date: today,
         end_date: endDate || today,
         status: 'active',
@@ -77,32 +75,16 @@ const AddGoalModal: React.FC<AddGoalModalProps> = ({ onClose, onCreated }) => {
             />
           </div>
 
-          <div className={styles.rows}>
-            <div className={styles.row}>
-              <div className={styles.field}>
-                <label>Số tiền mục tiêu (đ)</label>
-                <input
-                  type="number"
-                  placeholder="1000000"
-                  value={targetAmount}
-                  onChange={(e) => setTargetAmount(e.target.value)}
-                  required
-                  min="0"
-                />
-              </div>
-            </div>
-            <div className={styles.row}>
-              <div className={styles.field}>
-                <label>Số tiền hiện có (đ)</label>
-                <input
-                  type="number"
-                  placeholder="0"
-                  value={currentAmount}
-                  onChange={(e) => setCurrentAmount(e.target.value)}
-                  min="0"
-                />
-              </div>
-            </div>
+          <div className={styles.field}>
+            <label>Số tiền mục tiêu (đ)</label>
+            <input
+              type="number"
+              placeholder="1000000"
+              value={targetAmount}
+              onChange={(e) => setTargetAmount(e.target.value)}
+              required
+              min="0"
+            />
           </div>
 
           <div className={styles.field}>

@@ -5,20 +5,32 @@ import type { Wallet } from "../types/wallet";
 import { walletService } from "../services/walletService";
 import { useAuth } from "../../auth/context/AuthContext";
 
+export const WALLET_CHANGED_EVENT = "wallet:changed";
+
+export const emitWalletChanged = () => {
+  console.log("[useWallets] emit wallet:changed");
+  window.dispatchEvent(new CustomEvent(WALLET_CHANGED_EVENT));
+};
+
 export const useWallets = () => {
   const { user } = useAuth();
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
 
   const fetchWallets = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
+      setActionMessage(null);
+      console.log("[useWallets] fetching wallets for user", user?.user_id);
       const data = await walletService.getWallets(user?.user_id);
+      console.log("[useWallets] fetched", data.length, "wallets", data);
       setWallets(data);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Lỗi tải danh sách ví";
+      console.error("[useWallets] fetch error:", msg);
       setError(msg);
     } finally {
       setIsLoading(false);
@@ -30,9 +42,11 @@ export const useWallets = () => {
       try {
         await walletService.deleteWallet(walletId);
         setWallets((prev) => prev.filter((w) => w.wallet_id !== walletId));
+        setActionMessage(null);
+        emitWalletChanged();
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : "Xoá ví thất bại";
-        setError(msg);
+        setActionMessage(msg);
       }
     },
     [user?.user_id]
@@ -40,6 +54,15 @@ export const useWallets = () => {
 
   useEffect(() => {
     fetchWallets();
+  }, [fetchWallets]);
+
+  useEffect(() => {
+    const handler = () => {
+      console.log("[useWallets] received wallet:changed event, refreshing");
+      fetchWallets();
+    };
+    window.addEventListener(WALLET_CHANGED_EVENT, handler);
+    return () => window.removeEventListener(WALLET_CHANGED_EVENT, handler);
   }, [fetchWallets]);
 
   const totalBalance = wallets.reduce((sum, w) => sum + (w.current_balance || 0), 0);
@@ -51,6 +74,8 @@ export const useWallets = () => {
     activeCount,
     isLoading,
     error,
+    actionMessage,
+    clearActionMessage: () => setActionMessage(null),
     refresh: fetchWallets,
     setWallets,
     deleteWallet,

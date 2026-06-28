@@ -1,8 +1,13 @@
 const pool = require('../config/db');
 const { success, error } = require('../utils/response');
 const { encrypt, decrypt } = require('../utils/crypto');
+const { evaluateGoalDeadlines } = require('../services/goalAlert.service');
 
 const todayDateOnly = () => new Date().toISOString().slice(0, 10);
+
+const log = (...args) => {
+  console.log('[goal.controller]', ...args);
+};
 
 const buildGoalResponse = (goal, userId) => {
   const target = Number(decrypt(goal.target_amount, userId)) || 0;
@@ -45,6 +50,9 @@ const getGoals = async (req, res, next) => {
     );
 
     const result = rows.map((g) => buildGoalResponse(g, userId));
+
+    // Kiểm tra deadline mục tiêu (fire-and-forget, không block response)
+    evaluateGoalDeadlines(userId).catch(() => {});
 
     return success(res, result);
   } catch (err) {
@@ -90,9 +98,11 @@ const contributeToGoal = async (req, res, next) => {
     const { goalId } = req.params;
     const { amount, wallet_id, note } = req.body;
     const userId = req.user.user_id;
+    log('contributeToGoal start', { goalId, userId, amount, wallet_id, note });
 
     const contributionAmount = Number(amount);
     if (!Number.isFinite(contributionAmount) || contributionAmount <= 0) {
+      log('invalid contribution amount:', amount);
       return error(res, 'Thông tin góp tiền không hợp lệ', 400);
     }
 
@@ -102,13 +112,24 @@ const contributeToGoal = async (req, res, next) => {
     );
 
     if (goals.length === 0) {
+      log('goal not found', { goalId, userId });
       return error(res, 'Không tìm thấy mục tiêu', 404);
     }
 
     const goal = goals[0];
     const walletId = wallet_id || goal.wallet_id;
     if (!walletId) {
+      log('missing wallet_id for contribution');
       return error(res, 'Vui lòng chọn ví để góp tiền', 400);
+    }
+
+    const [walletRows] = await pool.query(
+      'SELECT wallet_id FROM wallets WHERE wallet_id = ? AND user_id = ?',
+      [walletId, userId]
+    );
+    if (walletRows.length === 0) {
+      log('wallet not found or not owned', { walletId, userId });
+      return error(res, 'Ví không hợp lệ', 400);
     }
 
     const targetAmount = Number(decrypt(goal.target_amount, userId)) || 0;
@@ -116,11 +137,20 @@ const contributeToGoal = async (req, res, next) => {
     const newCurrentAmount = currentAmount + contributionAmount;
     const status = targetAmount > 0 && newCurrentAmount >= targetAmount ? 'completed' : 'active';
 
+    log('updating goal', {
+      goalId,
+      currentAmount,
+      contributionAmount,
+      newCurrentAmount,
+      status,
+    });
+
     await pool.query(
-      'UPDATE goals SET current_amount = ?, status = ? WHERE goal_id = ?',
-      [encrypt(String(newCurrentAmount), userId), status, goalId]
+      'UPDATE goals SET current_amount = ?, status = ?, wallet_id = COALESCE(wallet_id, ?) WHERE goal_id = ?',
+      [encrypt(String(newCurrentAmount), userId), status, walletId, goalId]
     );
 
+    log('inserting goal_contributions', { goalId, walletId, contributionAmount });
     await pool.query(
       `INSERT INTO goal_contributions (goal_id, wallet_id, amount, note)
        VALUES (?, ?, ?, ?)`,
@@ -133,9 +163,11 @@ const contributeToGoal = async (req, res, next) => {
     );
 
     const response = buildGoalResponse(rows[0], userId);
+    log('contributeToGoal done', { goalId, newCurrentAmount });
 
     return success(res, response, 'Góp tiền thành công');
   } catch (err) {
+    log('contributeToGoal error:', err.message);
     next(err);
   }
 };

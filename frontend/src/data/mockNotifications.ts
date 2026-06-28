@@ -4,7 +4,7 @@ export const mockNotifications: Notification[] = [
   {
     notification_id: 1,
     user_id: 1,
-    type: "WARNING",
+    type: "budget_alert",
     title: "Cảnh báo ngân sách",
     message: 'Bạn đã sử dụng 85% ngân sách "Ăn uống" tháng này (850,000/1,000,000đ)',
     is_read: false,
@@ -13,7 +13,7 @@ export const mockNotifications: Notification[] = [
   {
     notification_id: 2,
     user_id: 1,
-    type: "REMINDER",
+    type: "daily_reminder",
     title: "Nhắc nhở hàng ngày",
     message: "Bạn chưa ghi nhận giao dịch nào hôm nay. Đừng quên cập nhật chi tiêu nhé!",
     is_read: false,
@@ -22,7 +22,7 @@ export const mockNotifications: Notification[] = [
   {
     notification_id: 3,
     user_id: 1,
-    type: "WARNING",
+    type: "budget_alert",
     title: "Vượt ngân sách",
     message: 'Ngân sách "Giải trí" đã vượt 105% giới hạn (525,000/500,000đ)',
     is_read: true,
@@ -31,7 +31,7 @@ export const mockNotifications: Notification[] = [
   {
     notification_id: 4,
     user_id: 1,
-    type: "SYSTEM",
+    type: "system",
     title: "Cập nhật hệ thống",
     message: "StudentMoney v1.1 đã có nhiều tính năng mới! Cập nhật ngay để trải nghiệm.",
     is_read: true,
@@ -40,7 +40,7 @@ export const mockNotifications: Notification[] = [
   {
     notification_id: 5,
     user_id: 1,
-    type: "SYSTEM",
+    type: "system",
     title: "Chào mừng bạn mới",
     message: "Cảm ơn bạn đã sử dụng StudentMoney. Hãy bắt đầu bằng việc thiết lập ngân sách đầu tiên nhé!",
     is_read: true,

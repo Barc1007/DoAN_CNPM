@@ -1,5 +1,6 @@
 import React from "react";
 import { Utensils, GraduationCap, Coffee, type LucideIcon } from "lucide-react";
+import { Link } from "react-router-dom";
 import styles from "./TransactionList.module.css";
 import { formatMoney } from "../../../../utils/formatMoney";
 import { formatShortDate } from "../../../../utils/formatDate";
@@ -26,7 +27,7 @@ const TransactionList: React.FC<TransactionListProps> = ({ transactions }) => {
     <div className={styles.card}>
       <div className={styles.header}>
         <h3 className={styles.title}>Giao dịch gần đây</h3>
-        <a href="#" className={styles.viewAll}>Xem tất cả</a>
+        <Link to="/transactions" className={styles.viewAll}>Xem tất cả</Link>
       </div>
 
       <div className={styles.list}>

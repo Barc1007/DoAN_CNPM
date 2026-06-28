@@ -8,6 +8,7 @@ export interface Wallet {
   current_balance: number;
   wallet_type: WalletType;
   is_active: boolean;
+  transaction_count?: number;
   created_at: string;
 }
 

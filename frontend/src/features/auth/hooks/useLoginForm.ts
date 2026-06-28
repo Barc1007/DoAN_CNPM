@@ -21,7 +21,7 @@ export const useLoginForm = () => {
     setError("");
 
     if (!username || !password) {
-      setError("Vui lòng nhập đầy đủ thông tin");
+      setError("Vui lòng nhập tên đăng nhập/email và mật khẩu");
       return;
     }
 

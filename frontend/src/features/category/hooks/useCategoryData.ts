@@ -74,12 +74,13 @@ export const useCategoryData = (initialType: CategoryType = "expense") => {
     setType(newType);
   };
 
-  const updateCategoryBudget = async (categoryId: number, budgetLimit: number) => {
+  const updateCategoryBudget = async (categoryId: number, budgetLimit: number, alertPercent?: number) => {
     try {
       const budgets = await budgetService.getBudgets();
       const now = new Date();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
       const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+      const alertValue = Math.min(100, Math.max(1, Math.round(alertPercent ?? 80)));
 
       const existingBudget = budgets.find((b) => {
         if (b.category_id !== categoryId) return false;
@@ -93,6 +94,7 @@ export const useCategoryData = (initialType: CategoryType = "expense") => {
       if (existingBudget) {
         await budgetService.updateBudget(existingBudget.budget_id, {
           limit_amount: Math.max(0, Math.round(budgetLimit)),
+          alert: alertValue,
         });
       } else {
         const category = data?.categories.find((c) => c.category_id === categoryId);
@@ -104,7 +106,7 @@ export const useCategoryData = (initialType: CategoryType = "expense") => {
           limit_amount: Math.max(0, Math.round(budgetLimit)),
           start_date: startOfMonth,
           end_date: endOfMonth,
-          alert: 80,
+          alert: alertValue,
         });
       }
 
@@ -128,6 +130,57 @@ export const useCategoryData = (initialType: CategoryType = "expense") => {
     }
   };
 
+  const addCategory = async (
+    name: string,
+    categoryType: CategoryType = type,
+    budgetLimit?: number
+  ) => {
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      throw new Error("Tên danh mục không được để trống");
+    }
+
+    if (trimmedName.length < 2 || trimmedName.length > 50) {
+      throw new Error("Tên danh mục phải từ 2 đến 50 ký tự");
+    }
+
+    if (!["expense", "income"].includes(categoryType)) {
+      throw new Error("Vui lòng chọn loại danh mục");
+    }
+
+    if (
+      categoryType === type &&
+      data?.categories.some(
+        (category) =>
+          category.type === categoryType &&
+          category.name.trim().toLowerCase() === trimmedName.toLowerCase()
+      )
+    ) {
+      throw new Error("Danh mục này đã tồn tại");
+    }
+
+    if (
+      budgetLimit !== undefined &&
+      (!Number.isFinite(budgetLimit) || budgetLimit < 0)
+    ) {
+      throw new Error("Ngân sách phải là số hợp lệ và không nhỏ hơn 0");
+    }
+
+    await categoryService.createCategory({
+      name: trimmedName,
+      type: categoryType,
+      ...(categoryType === "expense" && budgetLimit !== undefined
+        ? { budget_limit: budgetLimit }
+        : {}),
+    });
+    await fetchCategoryData();
+  };
+
+  const deleteCategory = async (categoryId: number) => {
+    await categoryService.deleteCategory(categoryId);
+    await fetchCategoryData();
+  };
+
   return {
     type,
     data,
@@ -136,6 +189,8 @@ export const useCategoryData = (initialType: CategoryType = "expense") => {
     handleTabChange,
     updateCategoryBudget,
     updateCategoryName,
+    addCategory,
+    deleteCategory,
     refetch: fetchCategoryData,
   };
 };

@@ -1,10 +1,17 @@
 const pool = require('../config/db');
 const { success, error } = require('../utils/response');
 const { decrypt } = require('../utils/crypto');
+const { evaluateGoalDeadlines } = require('../services/goalAlert.service');
+const { evaluateCurrentBudgets } = require('../services/budgetAlert.service');
 
 const getNotifications = async (req, res, next) => {
   try {
-    const userId = req.query.user_id || req.user.user_id;
+    const userId = req.user.user_id;
+
+    await Promise.all([
+      evaluateGoalDeadlines(userId),
+      evaluateCurrentBudgets(userId),
+    ]);
 
     const [rows] = await pool.query(
       `SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC`,
@@ -14,7 +21,7 @@ const getNotifications = async (req, res, next) => {
     const result = rows.map((n) => ({
       ...n,
       title: decrypt(n.title, userId),
-      message: decrypt(n.message, userId),
+      message: (decrypt(n.message, userId) || '').replace(/\[(budget|goal):\d+:\w+\]\s*/g, ''),
       is_read: Boolean(n.is_read),
     }));
 
@@ -26,23 +33,30 @@ const getNotifications = async (req, res, next) => {
 
 const markAsRead = async (req, res, next) => {
   try {
+    const userId = req.user.user_id;
     const { notificationId } = req.params;
 
     await pool.query(
-      'UPDATE notifications SET is_read = 1 WHERE notification_id = ?',
-      [notificationId]
+      'UPDATE notifications SET is_read = 1 WHERE notification_id = ? AND user_id = ?',
+      [notificationId, userId]
     );
 
     const [rows] = await pool.query(
-      'SELECT * FROM notifications WHERE notification_id = ?',
-      [notificationId]
+      'SELECT * FROM notifications WHERE notification_id = ? AND user_id = ?',
+      [notificationId, userId]
     );
 
     if (rows.length === 0) {
       return error(res, 'Không tìm thấy thông báo', 404);
     }
 
-    return success(res, { ...rows[0], is_read: true }, 'Đã đánh dấu đã đọc');
+    const decrypted = {
+      ...rows[0],
+      title: decrypt(rows[0].title, userId),
+      message: decrypt(rows[0].message, userId),
+      is_read: true,
+    };
+    return success(res, decrypted, 'Đã đánh dấu đã đọc');
   } catch (err) {
     next(err);
   }
@@ -50,7 +64,7 @@ const markAsRead = async (req, res, next) => {
 
 const markAllAsRead = async (req, res, next) => {
   try {
-    const userId = req.body.user_id || req.user.user_id;
+    const userId = req.user.user_id;
 
     await pool.query(
       'UPDATE notifications SET is_read = 1 WHERE user_id = ?',
@@ -65,11 +79,12 @@ const markAllAsRead = async (req, res, next) => {
 
 const deleteNotification = async (req, res, next) => {
   try {
+    const userId = req.user.user_id;
     const { notificationId } = req.params;
 
     const [result] = await pool.query(
-      'DELETE FROM notifications WHERE notification_id = ?',
-      [notificationId]
+      'DELETE FROM notifications WHERE notification_id = ? AND user_id = ?',
+      [notificationId, userId]
     );
 
     if (result.affectedRows === 0) {

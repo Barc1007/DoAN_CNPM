@@ -6,11 +6,13 @@ import type { CategoryType } from "../../../../types/category";
 interface CategoryHeaderProps {
   activeTab: CategoryType;
   onTabChange: (tab: CategoryType) => void;
+  onAddCategory: () => void;
 }
 
 const CategoryHeader: React.FC<CategoryHeaderProps> = ({
   activeTab,
   onTabChange,
+  onAddCategory,
 }) => {
   return (
     <header className={styles.headerContainer}>
@@ -22,7 +24,7 @@ const CategoryHeader: React.FC<CategoryHeaderProps> = ({
           </div>
           <p className={styles.subtitle}>Theo dõi mức chi từng danh mục trong tháng</p>
         </div>
-        <button className={styles.addButton} type="button" title="Thêm danh mục">
+        <button className={styles.addButton} type="button" title="Thêm danh mục" onClick={onAddCategory}>
           <Plus size={18} />
           <span>Thêm danh mục</span>
         </button>
