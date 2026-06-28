@@ -27,8 +27,9 @@ const getCurrentPeriodRange = (period, now = new Date()) => {
 
   if (period === 'week') {
     const dayOfWeek = today.getDay();
-    startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - dayOfWeek);
-    endDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + (6 - dayOfWeek));
+    const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - daysFromMonday);
+    endDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + 6);
   } else if (period === 'month') {
     startDate = new Date(today.getFullYear(), today.getMonth(), 1);
     endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
@@ -56,8 +57,8 @@ const getPreviousPeriodRange = (period, now = new Date()) => {
   let endDate;
 
   if (period === 'week') {
-    const dayOfWeek = today.getDay();
-    endDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - dayOfWeek - 1);
+    const { startDate: currentStart } = getCurrentPeriodRange(period, today);
+    endDate = new Date(currentStart.getFullYear(), currentStart.getMonth(), currentStart.getDate() - 1);
     startDate = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate() - 6);
   } else if (period === 'month') {
     endDate = new Date(today.getFullYear(), today.getMonth(), 0);
