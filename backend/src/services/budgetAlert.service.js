@@ -1,6 +1,8 @@
 const pool = require('../config/db');
 const { encrypt, decrypt } = require('../utils/crypto');
 
+const toBool = (v) => v === 1 || v === '1' || v === true || v === 'true';
+
 const toDateString = (v) => {
   if (v instanceof Date) return v.toISOString().slice(0, 10);
   if (typeof v === 'string') return v.slice(0, 10);
@@ -75,11 +77,11 @@ const buildAlertPayload = (budget, spent, limit, level) => {
   let title;
   let body;
   if (level === 'over') {
-    title = `Vuot ngan sach: ${name}`;
-    body = `${tag} Ban da chi ${formatVnd(spent)} (${percent}%), vuot ${formatVnd(over)} so voi han muc ${formatVnd(limit)}.`;
+    title = `Vượt ngân sách: ${name}`;
+    body = `${tag} Bạn đã chi ${formatVnd(spent)} (${percent}%), vượt ${formatVnd(over)} so với hạn mức ${formatVnd(limit)}.`;
   } else {
-    title = `Sap dat han muc: ${name}`;
-    body = `${tag} Ban da dat ${percent}% han muc "${name}" (${formatVnd(spent)} / ${formatVnd(limit)}).`;
+    title = `Sắp đạt hạn mức: ${name}`;
+    body = `${tag} Bạn đã đạt ${percent}% hạn mức "${name}" (${formatVnd(spent)} / ${formatVnd(limit)}).`;
   }
 
   return { title, message: body };

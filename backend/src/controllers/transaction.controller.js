@@ -94,6 +94,14 @@ const createTransaction = async (req, res, next) => {
       return error(res, 'Vui lòng điền đầy đủ thông tin giao dịch', 400);
     }
 
+    if (transaction_date) {
+      const txDay = new Date(transaction_date).toISOString().slice(0, 10);
+      const today = new Date().toISOString().slice(0, 10);
+      if (txDay > today) {
+        return error(res, 'Không thể tạo giao dịch với ngày trong tương lai', 400);
+      }
+    }
+
     const [walletCheck] = await pool.query(
       'SELECT wallet_id FROM wallets WHERE wallet_id = ? AND user_id = ?',
       [wallet_id, userId]
@@ -152,6 +160,14 @@ const updateTransaction = async (req, res, next) => {
       type === undefined
     ) {
       return error(res, 'Không có dữ liệu để cập nhật', 400);
+    }
+
+    if (transaction_date !== undefined) {
+      const txDay = new Date(transaction_date).toISOString().slice(0, 10);
+      const today = new Date().toISOString().slice(0, 10);
+      if (txDay > today) {
+        return error(res, 'Không thể chọn ngày trong tương lai', 400);
+      }
     }
 
     const nextWalletId = wallet_id !== undefined ? Number(wallet_id) : existing.wallet_id;

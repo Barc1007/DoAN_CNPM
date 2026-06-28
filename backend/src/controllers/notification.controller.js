@@ -14,7 +14,7 @@ const getNotifications = async (req, res, next) => {
     const result = rows.map((n) => ({
       ...n,
       title: decrypt(n.title, userId),
-      message: decrypt(n.message, userId),
+      message: (decrypt(n.message, userId) || '').replace(/\[(budget|goal):\d+:\w+\]\s*/g, ''),
       is_read: Boolean(n.is_read),
     }));
 
@@ -43,7 +43,13 @@ const markAsRead = async (req, res, next) => {
       return error(res, 'Không tìm thấy thông báo', 404);
     }
 
-    return success(res, { ...rows[0], is_read: true }, 'Đã đánh dấu đã đọc');
+    const decrypted = {
+      ...rows[0],
+      title: decrypt(rows[0].title, userId),
+      message: decrypt(rows[0].message, userId),
+      is_read: true,
+    };
+    return success(res, decrypted, 'Đã đánh dấu đã đọc');
   } catch (err) {
     next(err);
   }

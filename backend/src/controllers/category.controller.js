@@ -57,7 +57,7 @@ const getCategoryData = async (req, res, next) => {
     if (type === 'expense') {
       const today = new Date().toISOString().slice(0, 10);
       const [budgets] = await pool.query(
-        `SELECT category_id, limit_amount
+        `SELECT category_id, limit_amount, alert
          FROM budgets
          WHERE user_id = ?
            AND category_id IS NOT NULL
@@ -68,10 +68,10 @@ const getCategoryData = async (req, res, next) => {
 
       for (const budget of budgets) {
         const limit = Number(decrypt(budget.limit_amount, userId)) || 0;
-        budgetByCategory[budget.category_id] = Math.max(
-          budgetByCategory[budget.category_id] || 0,
-          limit
-        );
+        budgetByCategory[budget.category_id] = {
+          limit: Math.max(budgetByCategory[budget.category_id]?.limit || 0, limit),
+          alert: budgetByCategory[budget.category_id]?.alert ?? (Number(budget.alert) || 80),
+        };
       }
     }
 
@@ -89,8 +89,10 @@ const getCategoryData = async (req, res, next) => {
           : 0,
       };
 
-      if (type === 'expense' && budgetByCategory[c.category_id] !== undefined) {
-        category.budget_limit = budgetByCategory[c.category_id];
+      const entry = type === 'expense' ? budgetByCategory[c.category_id] : undefined;
+      if (entry && entry.limit > 0) {
+        category.budget_limit = entry.limit;
+        category.alert = entry.alert;
       }
 
       return category;

@@ -1,6 +1,7 @@
 const pool = require('../config/db');
 const { success, error } = require('../utils/response');
 const { encrypt, decrypt } = require('../utils/crypto');
+const { evaluateGoalDeadlines } = require('../services/goalAlert.service');
 
 const todayDateOnly = () => new Date().toISOString().slice(0, 10);
 
@@ -49,6 +50,9 @@ const getGoals = async (req, res, next) => {
     );
 
     const result = rows.map((g) => buildGoalResponse(g, userId));
+
+    // Kiểm tra deadline mục tiêu (fire-and-forget, không block response)
+    evaluateGoalDeadlines(userId).catch(() => {});
 
     return success(res, result);
   } catch (err) {

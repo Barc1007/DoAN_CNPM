@@ -1,6 +1,7 @@
 const pool = require('../config/db');
 const { success, error } = require('../utils/response');
 const { encrypt, decrypt } = require('../utils/crypto');
+const { evaluateBudgets } = require('../services/budgetAlert.service');
 
 const getBudgets = async (req, res, next) => {
   try {
@@ -106,6 +107,10 @@ const createBudget = async (req, res, next) => {
       usage_percent: 0,
     };
 
+    if (category_id) {
+      await evaluateBudgets(userId, category_id, start_date);
+    }
+
     return success(res, response, 'Tạo ngân sách thành công', 201);
   } catch (err) {
     next(err);
@@ -156,6 +161,10 @@ const updateBudget = async (req, res, next) => {
       limit_amount: Number(decrypt(b.limit_amount, userId)) || 0,
       spent_amount: Number(decrypt(b.spent_amount, userId)) || 0,
     };
+
+    if (b.category_id) {
+      await evaluateBudgets(b.user_id, b.category_id, b.start_date);
+    }
 
     return success(res, response, 'Cập nhật ngân sách thành công');
   } catch (err) {
