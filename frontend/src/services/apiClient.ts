@@ -29,6 +29,17 @@ apiClient.interceptors.response.use(
       response.status,
       response.data
     );
+
+    const method = response.config.method?.toLowerCase();
+    const url = response.config.url || "";
+    const shouldRefreshNotifications =
+      ["post", "put", "patch", "delete"].includes(method || "") &&
+      /^\/(transactions|budgets)\b/.test(url);
+
+    if (shouldRefreshNotifications && typeof window !== "undefined") {
+      window.dispatchEvent(new Event("notifications:refresh"));
+    }
+
     if (response.data && response.data.result !== undefined) {
       return response.data.result;
     }

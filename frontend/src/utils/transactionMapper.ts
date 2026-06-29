@@ -16,11 +16,14 @@ const CATEGORY_ICONS: Record<string, string> = {
 
 const normalizeDate = (value: string) => {
   if (!value) return "";
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return value;
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
+  const match = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return match ? `${match[1]}-${match[2]}-${match[3]}` : value;
+};
+
+const toDateInputValue = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 };
 
@@ -55,6 +58,6 @@ export const mapTransactionToApi = (payload: {
   wallet_id: payload.wallet_id,
   category_id: payload.category_id,
   amount: payload.amount,
-  transaction_date: payload.transaction_date || new Date().toISOString(),
+  transaction_date: payload.transaction_date || toDateInputValue(new Date()),
   note: payload.note || null,
 });

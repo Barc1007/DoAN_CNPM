@@ -26,6 +26,13 @@ export const useNotifications = () => {
 
   useEffect(() => {
     fetchNotifications();
+    window.addEventListener("notifications:refresh", fetchNotifications);
+    const intervalId = window.setInterval(fetchNotifications, 30_000);
+
+    return () => {
+      window.removeEventListener("notifications:refresh", fetchNotifications);
+      window.clearInterval(intervalId);
+    };
   }, [fetchNotifications]);
 
   // ================= ACTIONS =================

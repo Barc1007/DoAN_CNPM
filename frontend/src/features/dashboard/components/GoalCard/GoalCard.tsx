@@ -1,5 +1,6 @@
 import React from "react";
 import { Target, Laptop } from "lucide-react";
+import { Link } from "react-router-dom";
 import styles from "./GoalCard.module.css";
 import { formatMoney } from "../../../../utils/formatMoney";
 import { getGoalMetrics, getGoalStatusText } from "../../../goals/utils/goalMetrics";
@@ -25,10 +26,13 @@ const GoalCard: React.FC<GoalCardProps> = ({
   return (
     <div className={styles.card}>
       <div className={styles.header}>
-        <div className={styles.iconWrapper}>
-          <Target size={20} />
+        <div className={styles.headerTitle}>
+          <div className={styles.iconWrapper}>
+            <Target size={20} />
+          </div>
+          <h3 className={styles.title}>Mục tiêu tiết kiệm</h3>
         </div>
-        <h3 className={styles.title}>Mục tiêu tiết kiệm</h3>
+        <Link to="/goals" className={styles.viewAll}>Xem tất cả</Link>
       </div>
 
       <div className={styles.goalInfo}>
