@@ -85,3 +85,37 @@
   font-size: 14px;
   font-weight: 600;
 }
+
+@media (max-width: 760px) {
+  .card {
+    border-radius: 18px;
+    padding: 22px;
+  }
+
+  .content {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 22px;
+  }
+
+  .chartContainer {
+    width: min(220px, 100%);
+    height: 220px;
+    margin: 0 auto;
+  }
+
+  .legendItem {
+    gap: 12px;
+  }
+
+  .categoryAmount {
+    text-align: right;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 420px) {
+  .chartContainer {
+    height: 190px;
+  }
+}

@@ -14,6 +14,7 @@ import { formatMoney } from "../../../../utils/formatMoney";
 import ChartPanel from "../ChartPanel/ChartPanel";
 import styles from "./CashflowBarChart.module.css";
 import type { CashflowPoint } from "../../types/report";
+import { formatMoneyAxis } from "../../utils/formatReportAxis";
 
 interface CashflowBarChartProps {
   data: CashflowPoint[];
@@ -21,6 +22,8 @@ interface CashflowBarChartProps {
 
 const CashflowBarChart: React.FC<CashflowBarChartProps> = ({ data }) => {
   const chartKey = data.map((item) => `${item.label}-${item.income}-${item.expense}`).join("|");
+  const maxAmount = Math.max(0, ...data.flatMap((item) => [item.income, item.expense]));
+  const yAxisProps = maxAmount > 0 ? {} : { domain: [0, 1] as [number, number], ticks: [0] };
 
   return (
     <ChartPanel title="Dòng tiền thu chi" icon={BarChart3}>
@@ -30,8 +33,9 @@ const CashflowBarChart: React.FC<CashflowBarChartProps> = ({ data }) => {
             <CartesianGrid strokeDasharray="3 3" stroke="#e7edf3" />
             <XAxis dataKey="label" tick={{ fontSize: 12, fill: "#6b7280" }} />
             <YAxis
+              {...yAxisProps}
               tick={{ fontSize: 12, fill: "#6b7280" }}
-              tickFormatter={(value) => `${Number(value) / 1000000}tr`}
+              tickFormatter={formatMoneyAxis}
             />
             <Tooltip
               formatter={(value) => formatMoney(Number(value))}

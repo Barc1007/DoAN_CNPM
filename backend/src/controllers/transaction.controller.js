@@ -17,11 +17,25 @@ const decryptAmount = (value, userId) => {
   return isEncryptedValue(decrypted) ? null : Number(decrypted) || 0;
 };
 
+const toDateOnly = (value) => {
+  if (!value) return '';
+
+  if (value instanceof Date) {
+    const year = value.getFullYear();
+    const month = String(value.getMonth() + 1).padStart(2, '0');
+    const day = String(value.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  return String(value).slice(0, 10);
+};
+
 const buildTransactionResponse = (transaction, userId) => ({
   ...transaction,
   amount: decryptAmount(transaction.amount, userId) ?? 0,
   note: decryptText(transaction.note, userId) || '',
   category_name: decryptText(transaction.category_name, userId) || transaction.category_name || '',
+  transaction_date: toDateOnly(transaction.transaction_date),
 });
 
 const getWalletBalance = async (walletId, userId, excludedTransactionId = null) => {
@@ -94,9 +108,14 @@ const createTransaction = async (req, res, next) => {
       return error(res, 'Vui lòng điền đầy đủ thông tin giao dịch', 400);
     }
 
+    const transactionAmount = Number(amount);
+    if (!Number.isFinite(transactionAmount) || transactionAmount <= 0) {
+      return error(res, 'Số tiền giao dịch phải lớn hơn 0', 400);
+    }
+
     if (transaction_date) {
-      const txDay = new Date(transaction_date).toISOString().slice(0, 10);
-      const today = new Date().toISOString().slice(0, 10);
+      const txDay = toDateOnly(transaction_date);
+      const today = toDateOnly(new Date());
       if (txDay > today) {
         return error(res, 'Không thể tạo giao dịch với ngày trong tương lai', 400);
       }
@@ -111,10 +130,24 @@ const createTransaction = async (req, res, next) => {
       return error(res, 'Ví không tồn tại hoặc không thuộc quyền sở hữu của bạn', 404);
     }
 
+    const category = await getCategoryForUser(category_id, userId);
+    if (!category) {
+      return error(res, 'Danh mục không tồn tại hoặc không thuộc quyền sử dụng của bạn', 404);
+    }
+
+    const currentBalance = await getWalletBalance(wallet_id, userId);
+    if (currentBalance === null) {
+      return error(res, 'Ví không tồn tại hoặc không thuộc quyền sở hữu của bạn', 404);
+    }
+
+    if (category.type === 'expense' && currentBalance - transactionAmount < 0) {
+      return error(res, 'Số dư ví không đủ để thực hiện giao dịch này.', 400);
+    }
+
     const [result] = await pool.query(
       `INSERT INTO transactions (user_id, wallet_id, category_id, amount, transaction_date, note)
        VALUES (?, ?, ?, ?, ?, ?)`,
-      [userId, wallet_id, category_id, encrypt(String(amount), userId), transaction_date || new Date(), encrypt(note || '', userId)]
+      [userId, wallet_id, category_id, encrypt(String(transactionAmount), userId), transaction_date || new Date(), encrypt(note || '', userId)]
     );
 
     const [rows] = await pool.query(
@@ -163,8 +196,8 @@ const updateTransaction = async (req, res, next) => {
     }
 
     if (transaction_date !== undefined) {
-      const txDay = new Date(transaction_date).toISOString().slice(0, 10);
-      const today = new Date().toISOString().slice(0, 10);
+      const txDay = toDateOnly(transaction_date);
+      const today = toDateOnly(new Date());
       if (txDay > today) {
         return error(res, 'Không thể chọn ngày trong tương lai', 400);
       }

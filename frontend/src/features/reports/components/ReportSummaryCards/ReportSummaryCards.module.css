@@ -83,5 +83,16 @@
 @media (max-width: 560px) {
   .grid {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .card {
+    min-height: 104px;
+    border-radius: 18px;
+    padding: 22px;
+  }
+
+  .cardHeader {
+    font-size: 14px;
   }
 }

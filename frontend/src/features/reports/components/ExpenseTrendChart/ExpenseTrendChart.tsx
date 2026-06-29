@@ -13,6 +13,7 @@ import { formatMoney } from "../../../../utils/formatMoney";
 import ChartPanel from "../ChartPanel/ChartPanel";
 import styles from "./ExpenseTrendChart.module.css";
 import type { ExpenseTrendPoint, ReportPeriod } from "../../types/report";
+import { formatMoneyAxis } from "../../utils/formatReportAxis";
 
 interface ExpenseTrendChartProps {
   data: ExpenseTrendPoint[];
@@ -28,6 +29,8 @@ const TREND_TITLES: Record<ReportPeriod, string> = {
 
 const ExpenseTrendChart: React.FC<ExpenseTrendChartProps> = ({ data, period }) => {
   const chartKey = data.map((item) => `${item.date}-${item.amount}`).join("|");
+  const maxAmount = Math.max(0, ...data.map((item) => item.amount));
+  const yAxisProps = maxAmount > 0 ? {} : { domain: [0, 1] as [number, number], ticks: [0] };
 
   return (
     <ChartPanel title={TREND_TITLES[period]} icon={CalendarDays}>
@@ -37,8 +40,9 @@ const ExpenseTrendChart: React.FC<ExpenseTrendChartProps> = ({ data, period }) =
             <CartesianGrid strokeDasharray="3 3" stroke="#e7edf3" />
             <XAxis dataKey="date" tick={{ fontSize: 12, fill: "#6b7280" }} />
             <YAxis
+              {...yAxisProps}
               tick={{ fontSize: 12, fill: "#6b7280" }}
-              tickFormatter={(value) => `${Number(value) / 1000000}tr`}
+              tickFormatter={formatMoneyAxis}
             />
             <Tooltip formatter={(value) => formatMoney(Number(value))} />
             <Line

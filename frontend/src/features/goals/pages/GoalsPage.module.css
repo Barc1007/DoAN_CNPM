@@ -66,4 +66,11 @@
   .header h1 {
     font-size: 24px;
   }
+
+  .fab {
+    right: 18px;
+    bottom: 88px;
+    width: 54px;
+    height: 54px;
+  }
 }

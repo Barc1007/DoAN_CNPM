@@ -16,6 +16,13 @@ interface AddTransactionModalProps {
   onAdded: () => void;
 }
 
+const toDateInputValue = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
 const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   onClose,
   onAdded,
@@ -25,13 +32,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   const [walletId, setWalletId] = useState<number | "">("");
   const [categoryId, setCategoryId] = useState<number | "">("");
   const [amount, setAmount] = useState("");
-  const [date, setDate] = useState(() => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    const day = String(now.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  });
+  const [date, setDate] = useState(() => toDateInputValue(new Date()));
   const [note, setNote] = useState("");
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [categories, setCategories] = useState<CategoryStat[]>([]);
@@ -151,7 +152,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                 type="date"
                 className={styles.input}
                 value={date}
-                max={new Date().toISOString().slice(0, 10)}
+                max={toDateInputValue(new Date())}
                 onChange={(e) => setDate(e.target.value)}
               />
             </div>

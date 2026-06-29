@@ -1,7 +1,7 @@
 const pool = require('../config/db');
 const { encrypt, decrypt } = require('../utils/crypto');
 
-const BUDGET_ALERT_THRESHOLD = 80;
+const DEFAULT_BUDGET_ALERT_THRESHOLD = 80;
 
 const toBool = (v) => v === 1 || v === '1' || v === true || v === 'true';
 
@@ -9,6 +9,27 @@ const toDateString = (v) => {
   if (v instanceof Date) return v.toISOString().slice(0, 10);
   if (typeof v === 'string') return v.slice(0, 10);
   return String(v).slice(0, 10);
+};
+
+const getMonthPeriod = (value) => {
+  const d = new Date(value);
+  const year = d.getFullYear();
+  const month = d.getMonth() + 1;
+  const start = `${year}-${String(month).padStart(2, '0')}-01`;
+  const endDay = new Date(year, month, 0).getDate();
+  const end = `${year}-${String(month).padStart(2, '0')}-${String(endDay).padStart(2, '0')}`;
+  return { start, end };
+};
+
+const getBudgetKey = (budget) => (
+  budget.category_id === null || budget.category_id === undefined
+    ? 'total'
+    : String(budget.category_id)
+);
+
+const getBudgetAlertSeverity = (level, atDate = new Date()) => {
+  const { start } = getMonthPeriod(atDate);
+  return `${level}_${start.slice(0, 7).replace('-', '_')}`;
 };
 
 const computeBudgetSpent = async (budget, userId) => {
@@ -56,7 +77,40 @@ const findActiveBudgetsForCategory = async (userId, categoryId, atDate) => {
        ${filterSql}`,
     params
   );
-  return rows;
+
+  const budgetByScope = new Map(rows.map((row) => [getBudgetKey(row), row]));
+  const fallbackParams = [userId, day];
+  let fallbackFilterSql = '';
+
+  if (categoryId !== undefined) {
+    fallbackFilterSql = 'AND (category_id IS NULL OR category_id = ?)';
+    fallbackParams.push(categoryId);
+  }
+
+  const [fallbackRows] = await pool.query(
+    `SELECT budget_id, user_id, category_id, name, limit_amount, start_date, end_date, alert
+     FROM budgets
+     WHERE user_id = ?
+       AND start_date <= ?
+       ${fallbackFilterSql}
+     ORDER BY category_id IS NULL DESC, category_id, end_date DESC, budget_id DESC`,
+    fallbackParams
+  );
+
+  const { start, end } = getMonthPeriod(atDate);
+  for (const budget of fallbackRows) {
+    const key = getBudgetKey(budget);
+    if (budgetByScope.has(key)) continue;
+
+    budgetByScope.set(key, {
+      ...budget,
+      start_date: start,
+      end_date: end,
+      carried_from_budget_id: budget.budget_id,
+    });
+  }
+
+  return Array.from(budgetByScope.values());
 };
 
 const hasRecentAlert = async (userId, budgetId, severity) => {
@@ -81,13 +135,11 @@ const formatPercent = (value) => {
   return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
 };
 
-const buildAlertPayload = (budget, spent, limit, level) => {
+const buildAlertPayload = (budget, spent, limit, level, severity) => {
   const over = spent - limit;
   const percent = limit > 0 ? formatPercent((spent / limit) * 100) : '0';
   const name = decrypt(budget.name, budget.user_id);
-  const tag = level === 'over'
-    ? `[budget:${budget.budget_id}:over]`
-    : `[budget:${budget.budget_id}:near]`;
+  const tag = `[budget:${budget.budget_id}:${severity}]`;
 
   let title;
   let body;
@@ -128,17 +180,20 @@ const evaluateBudgets = async (userId, categoryId, atDate = new Date()) => {
 
       const spent = await computeBudgetSpent(budget, userId);
       const percent = (spent / limit) * 100;
+      const configuredThreshold = Number(budget.alert) || DEFAULT_BUDGET_ALERT_THRESHOLD;
+      const threshold = Math.min(configuredThreshold, DEFAULT_BUDGET_ALERT_THRESHOLD);
 
       let level = null;
       if (percent >= 100) level = 'over';
-      else if (percent >= BUDGET_ALERT_THRESHOLD) level = 'near';
+      else if (percent >= threshold) level = 'near';
 
       if (!level) continue;
 
-      const alreadyNotified = await hasRecentAlert(userId, budget.budget_id, level);
+      const severity = getBudgetAlertSeverity(level, atDate);
+      const alreadyNotified = await hasRecentAlert(userId, budget.budget_id, severity);
       if (alreadyNotified) continue;
 
-      const { title, message } = buildAlertPayload(budget, spent, limit, level);
+      const { title, message } = buildAlertPayload(budget, spent, limit, level, severity);
       await insertNotification(userId, title, message);
     }
   } catch (err) {

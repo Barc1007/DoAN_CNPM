@@ -16,9 +16,10 @@ export interface Transaction {
 }
 
 export type FilterType = "ALL" | "INCOME" | "EXPENSE";
+export type DateFilterMode = "MONTH" | "RANGE" | "ALL_TIME";
 
 export interface TransactionStats {
   totalIncome: number;
   totalExpense: number;
-  currentMonthCount: number;
+  totalTransactions: number;
 }
