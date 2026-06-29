@@ -59,3 +59,26 @@
   font-size: 18px;
   font-weight: 600;
 }
+
+@media (max-width: 760px) {
+  .summary {
+    border-radius: 18px;
+    padding: 22px;
+    margin-bottom: 24px;
+  }
+
+  .balance {
+    font-size: 34px;
+    margin-bottom: 24px;
+    overflow-wrap: anywhere;
+  }
+
+  .subCards {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .subCard {
+    padding: 16px;
+  }
+}

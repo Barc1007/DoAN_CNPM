@@ -9,6 +9,7 @@
   position: fixed;
   left: 0;
   top: 0;
+  z-index: 50;
 }
 
 .logoContainer {
@@ -116,6 +117,7 @@
 
 .profileInfo {
   flex: 1;
+  min-width: 0;
 }
 
 .profileName {
@@ -127,9 +129,101 @@
 .profileEmail {
   font-size: 11px;
   color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .logoutBtn {
   color: var(--color-text-muted);
   padding: 4px;
+}
+
+@media (max-width: 760px) {
+  .sidebar {
+    width: 100%;
+    height: 72px;
+    top: auto;
+    bottom: 0;
+    right: 0;
+    border-right: 0;
+    border-top: 1px solid var(--color-border);
+    padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+    box-shadow: 0 -12px 30px rgba(15, 23, 42, 0.1);
+  }
+
+  .logoContainer,
+  .profileCard {
+    display: none;
+  }
+
+  .nav {
+    flex: none;
+    height: 100%;
+    padding: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+  }
+
+  .nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav ul {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+    min-width: max-content;
+    height: 100%;
+  }
+
+  .nav li {
+    display: flex;
+  }
+
+  .navItem {
+    position: relative;
+    min-width: 72px;
+    height: 56px;
+    margin-bottom: 0;
+    padding: 8px 10px;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    border-radius: 14px;
+    font-size: 11px;
+    line-height: 1.1;
+  }
+
+  .navLabel {
+    flex: none;
+    max-width: 76px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .notificationBadge {
+    position: absolute;
+    top: 4px;
+    right: 7px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 420px) {
+  .sidebar {
+    height: 68px;
+    padding-inline: 8px;
+  }
+
+  .navItem {
+    min-width: 66px;
+    height: 52px;
+    padding-inline: 8px;
+  }
 }

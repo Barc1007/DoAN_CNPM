@@ -57,6 +57,9 @@
   font-size: 15px;
   font-weight: 600;
   margin-bottom: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .goalText p {
@@ -109,4 +112,28 @@
 .status span {
   color: var(--color-primary);
   font-weight: 600;
+}
+
+@media (max-width: 760px) {
+  .card {
+    border-radius: 18px;
+    padding: 20px;
+  }
+
+  .goalInfo {
+    align-items: flex-start;
+  }
+
+  .goalText {
+    min-width: 0;
+  }
+
+  .amounts {
+    gap: 12px;
+    font-size: 12px;
+  }
+
+  .amounts span {
+    overflow-wrap: anywhere;
+  }
 }
