@@ -63,9 +63,9 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
   const budgetLimit = category.budget_limit || 0;
   const remaining = budgetLimit - category.total_amount;
   const usedRate = budgetLimit > 0 ? category.total_amount / budgetLimit : 0;
-  const percentage = isExpense ? usedRate * 100 : category.percentage;
+  const percentage = usedRate * 100;
   const progressPercent = Math.min(Math.round(percentage), 100);
-  const displayPercentage = Math.min(Math.max(percentage, 0), 100);
+  const displayPercentage = Math.max(percentage, 0);
 
   const status = useMemo(() => {
     if (!isExpense) {
@@ -199,33 +199,41 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
           <strong>{formatCurrency(category.total_amount)}</strong>
         </div>
 
-        <div className={styles.progressBarBg}>
-          <div
-            className={`${styles.progressBarFill} ${status.fillClassName}`}
-            style={{ width: `${progressPercent}%` }}
-          />
-        </div>
+        {isExpense && (
+          <>
+            <div className={styles.progressBarBg}>
+              <div
+                className={`${styles.progressBarFill} ${status.fillClassName}`}
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
 
-        <div className={styles.lineItem}>
-          <span>{isExpense ? "Ngân sách" : "Tỷ trọng"}</span>
-          <strong>{isExpense && budgetLimit > 0 ? formatCurrency(budgetLimit) : `${category.percentage.toFixed(1)}%`}</strong>
-        </div>
+            <div className={styles.lineItem}>
+              <span>Ngân sách</span>
+              <strong>{budgetLimit > 0 ? formatCurrency(budgetLimit) : "0 đ"}</strong>
+            </div>
+          </>
+        )}
       </div>
 
-      <div className={styles.divider} />
+      {isExpense && (
+        <>
+          <div className={styles.divider} />
 
-      <div className={styles.footer}>
-        <div>
-          <span>{isExpense ? (remaining >= 0 ? "Còn lại" : "Vượt mức") : "Danh mục"}</span>
-          <strong className={remaining < 0 ? styles.negative : styles.remainingValue}>
-            {isExpense && budgetLimit > 0 ? formatCurrency(Math.abs(remaining)) : category.name}
-          </strong>
-        </div>
-        <div className={styles.rate}>
-          <span>Tỷ lệ</span>
-          <strong>{isExpense && budgetLimit <= 0 ? "0%" : `${displayPercentage.toFixed(1)}%`}</strong>
-        </div>
-      </div>
+          <div className={styles.footer}>
+            <div>
+              <span>{remaining >= 0 ? "Còn lại" : "Vượt mức"}</span>
+              <strong className={remaining < 0 ? styles.negative : styles.remainingValue}>
+                {budgetLimit > 0 ? formatCurrency(Math.abs(remaining)) : "0 đ"}
+              </strong>
+            </div>
+            <div className={styles.rate}>
+              <span>Tỷ lệ</span>
+              <strong>{budgetLimit <= 0 ? "0%" : `${displayPercentage.toFixed(1)}%`}</strong>
+            </div>
+          </div>
+        </>
+      )}
 
       {editingMode === "budget" && isExpense && (
         <form className={styles.editor} onSubmit={handleBudgetSubmit}>

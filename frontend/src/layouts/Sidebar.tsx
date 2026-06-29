@@ -62,9 +62,13 @@ const Sidebar: React.FC = () => {
     };
 
     loadUnreadNotifications();
+    window.addEventListener("notifications:refresh", loadUnreadNotifications);
+    const intervalId = window.setInterval(loadUnreadNotifications, 30_000);
 
     return () => {
       cancelled = true;
+      window.removeEventListener("notifications:refresh", loadUnreadNotifications);
+      window.clearInterval(intervalId);
     };
   }, [location.pathname, user?.token]);
 

@@ -193,3 +193,50 @@
   cursor: not-allowed;
   opacity: 0.7;
 }
+
+@media (max-width: 760px) {
+  .page {
+    padding: 0;
+    min-height: auto;
+  }
+
+  .header {
+    margin-bottom: 22px;
+  }
+
+  .title {
+    font-size: 23px;
+  }
+
+  .fab {
+    right: 18px;
+    bottom: 88px;
+    width: 52px;
+    height: 52px;
+  }
+
+  .overlay {
+    align-items: flex-end;
+    padding: 12px;
+  }
+
+  .modal {
+    max-height: calc(100svh - 24px);
+    border-radius: 18px;
+  }
+
+  .modalHeader,
+  .typeTabs,
+  .form {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .row {
+    flex-direction: column;
+  }
+
+  .confirmActions {
+    flex-direction: column-reverse;
+  }
+}

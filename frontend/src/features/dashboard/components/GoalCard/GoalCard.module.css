@@ -8,9 +8,16 @@
 
 .header {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.headerTitle {
+  display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 24px;
+  min-width: 0;
 }
 
 .iconWrapper {
@@ -23,6 +30,13 @@
 .title {
   font-size: 16px;
   font-weight: 600;
+}
+
+.viewAll {
+  color: var(--color-primary);
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .goalInfo {
@@ -43,6 +57,9 @@
   font-size: 15px;
   font-weight: 600;
   margin-bottom: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .goalText p {
@@ -95,4 +112,28 @@
 .status span {
   color: var(--color-primary);
   font-weight: 600;
+}
+
+@media (max-width: 760px) {
+  .card {
+    border-radius: 18px;
+    padding: 20px;
+  }
+
+  .goalInfo {
+    align-items: flex-start;
+  }
+
+  .goalText {
+    min-width: 0;
+  }
+
+  .amounts {
+    gap: 12px;
+    font-size: 12px;
+  }
+
+  .amounts span {
+    overflow-wrap: anywhere;
+  }
 }

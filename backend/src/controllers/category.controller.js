@@ -16,6 +16,9 @@ const getCategoryData = async (req, res, next) => {
   try {
     const { type } = req.query;
     const userId = req.query.user_id || req.user.user_id;
+    const { start, end } = getCurrentMonthPeriod();
+    const monthStart = `${start} 00:00:00`;
+    const monthEnd = `${end} 23:59:59`;
 
     if (!type || !['income', 'expense'].includes(type)) {
       return error(res, 'Tham số type phải là income hoặc expense', 400);
@@ -26,20 +29,26 @@ const getCategoryData = async (req, res, next) => {
               COUNT(t.transaction_id) AS transaction_count
        FROM categories c
        LEFT JOIN transactions t
-         ON c.category_id = t.category_id AND t.user_id = ?
+         ON c.category_id = t.category_id
+        AND t.user_id = ?
+        AND t.transaction_date >= ?
+        AND t.transaction_date <= ?
        WHERE c.type = ?
          AND (c.user_id IS NULL OR c.user_id = ?)
        GROUP BY c.category_id, c.name, c.type, c.user_id
        ORDER BY c.category_id`,
-      [userId, type, userId]
+      [userId, monthStart, monthEnd, type, userId]
     );
 
     const [allTransactions] = await pool.query(
       `SELECT t.amount, t.category_id
        FROM transactions t
        JOIN categories c ON t.category_id = c.category_id
-       WHERE t.user_id = ? AND c.type = ?`,
-      [userId, type]
+       WHERE t.user_id = ?
+         AND c.type = ?
+         AND t.transaction_date >= ?
+         AND t.transaction_date <= ?`,
+      [userId, type, monthStart, monthEnd]
     );
 
     const categoryTotals = {};
@@ -57,21 +66,32 @@ const getCategoryData = async (req, res, next) => {
     if (type === 'expense') {
       const today = new Date().toISOString().slice(0, 10);
       const [budgets] = await pool.query(
-        `SELECT category_id, limit_amount, alert
+        `SELECT category_id, limit_amount, alert,
+                CASE WHEN start_date <= ? AND end_date >= ? THEN 1 ELSE 0 END AS is_active
          FROM budgets
          WHERE user_id = ?
            AND category_id IS NOT NULL
            AND start_date <= ?
-           AND end_date >= ?`,
-        [userId, today, today]
+         ORDER BY category_id, is_active DESC, end_date DESC, budget_id DESC`,
+        [today, today, userId, today]
       );
 
       for (const budget of budgets) {
+        if (budgetByCategory[budget.category_id]?.is_active) {
+          continue;
+        }
+
         const limit = Number(decrypt(budget.limit_amount, userId)) || 0;
-        budgetByCategory[budget.category_id] = {
-          limit: Math.max(budgetByCategory[budget.category_id]?.limit || 0, limit),
-          alert: budgetByCategory[budget.category_id]?.alert ?? (Number(budget.alert) || 80),
-        };
+        const current = budgetByCategory[budget.category_id];
+        const isActive = Number(budget.is_active) === 1;
+
+        if (!current || (isActive && !current.is_active)) {
+          budgetByCategory[budget.category_id] = {
+            limit,
+            alert: Number(budget.alert) || 80,
+            is_active: isActive,
+          };
+        }
       }
     }
 

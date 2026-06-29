@@ -75,3 +75,124 @@
   color: #ffffff;
   box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
 }
+
+.datePanel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.dateModeGroup {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #f3f4f6;
+  border-radius: 10px;
+  padding: 4px;
+}
+
+.dateModeBtn {
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #6b7280;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 12px;
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  white-space: nowrap;
+}
+
+.dateModeBtn:hover:not(.dateModeActive) {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.dateModeActive {
+  background: #0f766e;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(15, 118, 110, 0.25);
+}
+
+.dateInputWrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #4b5563;
+  font-size: 13px;
+  font-weight: 600;
+  box-sizing: border-box;
+}
+
+.dateInputWrapper svg {
+  color: #0f766e;
+  flex: 0 0 auto;
+}
+
+.dateInputWrapper input {
+  min-width: 128px;
+  border: none;
+  outline: none;
+  color: #111827;
+  font: inherit;
+  background: transparent;
+}
+
+.rangeInputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.resetDateBtn {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #0f766e;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.resetDateBtn:hover {
+  border-color: #99f6e4;
+  box-shadow: 0 6px 16px rgba(15, 118, 110, 0.12);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 760px) {
+  .toolbar,
+  .datePanel,
+  .rangeInputs {
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .filterGroup,
+  .dateModeGroup {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .dateInputWrapper {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .dateInputWrapper input {
+    min-width: 0;
+    width: 100%;
+  }
+}

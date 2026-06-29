@@ -13,6 +13,13 @@ import { useAuth } from "../../auth/context/AuthContext";
 import type { Transaction } from "../../../features/transactions/types/transaction";
 import styles from "./TransactionsPage.module.css";
 
+const toDateInputValue = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
 const TransactionsPage = () => {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
@@ -27,11 +34,20 @@ const TransactionsPage = () => {
     searchQuery,
     handleFilterChange,
     handleSearchChange,
+    dateFilterMode,
+    selectedMonth,
+    rangeStart,
+    rangeEnd,
+    handleDateFilterModeChange,
+    handleSelectedMonthChange,
+    handleRangeStartChange,
+    handleRangeEndChange,
+    resetToCurrentMonth,
     deleteTransaction,
     refresh,
   } = useTransactions(categoryQuery);
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = toDateInputValue(new Date());
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     wallet_id: 0,
@@ -207,8 +223,17 @@ const TransactionsPage = () => {
         <Toolbar
           searchQuery={searchQuery}
           filterType={filterType}
+          dateFilterMode={dateFilterMode}
+          selectedMonth={selectedMonth}
+          rangeStart={rangeStart}
+          rangeEnd={rangeEnd}
           onSearchChange={handleSearchChange}
           onFilterChange={handleFilterChange}
+          onDateFilterModeChange={handleDateFilterModeChange}
+          onSelectedMonthChange={handleSelectedMonthChange}
+          onRangeStartChange={handleRangeStartChange}
+          onRangeEndChange={handleRangeEndChange}
+          onResetToCurrentMonth={resetToCurrentMonth}
         />
         <TransactionList
           transactions={filteredTransactions}

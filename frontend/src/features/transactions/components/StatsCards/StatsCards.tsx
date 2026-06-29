@@ -35,14 +35,13 @@ const StatsCards: React.FC<StatsCardsProps> = ({ stats }) => {
         </div>
       </div>
 
-      {/* Card 3 — Giao dịch tháng này (gradient) */}
       <div className={`${styles.card} ${styles.cardGradient}`}>
         <div className={styles.cardLabel}>
           <CalendarDays size={14} className={styles.labelIconGradient} />
-          Giao dịch tháng này
+          Giao dịch hiển thị
         </div>
         <div className={`${styles.cardAmount} ${styles.gradientAmount}`}>
-          {stats.currentMonthCount} giao dịch
+          {stats.totalTransactions} giao dịch
         </div>
       </div>
     </div>
