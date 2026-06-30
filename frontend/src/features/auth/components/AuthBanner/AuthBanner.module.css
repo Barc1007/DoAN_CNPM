@@ -33,36 +33,6 @@
   margin-bottom: 3rem;
 }
 
-.statsGrid {
-  display: flex;
-  gap: 1.5rem;
-}
-
-.statCard {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 1.5rem;
-  border-radius: 1rem;
-  min-width: 120px;
-  transition: transform 0.3s ease;
-}
-
-.statCard:hover {
-  transform: translateY(-5px);
-}
-
-.statValue {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 0.25rem;
-}
-
-.statLabel {
-  font-size: 0.9rem;
-  opacity: 0.9;
-}
-
 @media (max-width: 900px) {
   .banner {
     display: none;

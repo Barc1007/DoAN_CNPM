@@ -113,10 +113,6 @@ const LoginForm: React.FC = () => {
       <div className={styles.registerPrompt}>
         Chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
       </div>
-
-      <div className={styles.demoNote}>
-        <strong>Demo:</strong> Nhấn đăng nhập với tài khoản <strong>admin / 123456</strong> để trải nghiệm
-      </div>
     </div>
   );
 };
