@@ -1,7 +1,6 @@
+console.log('[mailer] VERSION: ipv4-fix-v2', new Date().toISOString());
 const nodemailer = require('nodemailer');
-
 let transporter = null;
-
 const getTransporter = () => {
   if (transporter) return transporter;
 
